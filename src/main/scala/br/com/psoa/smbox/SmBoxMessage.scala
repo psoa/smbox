@@ -46,6 +46,7 @@ case class SmBoxMessage(val subject: Option[String], charset: Option[String], or
       .append(System.lineSeparator)
       .toString()
   }
+  def getDate() : String = getDate(date, new SimpleDateFormat("yyyyMMdd"))
 
   def getDate (date: Option[Date], formatter: DateFormat): String = date match {
     case  Some(d) =>  formatter.format(d)
