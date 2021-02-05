@@ -11,19 +11,10 @@ case class SmBoxMessage(val subject: Option[String], charset: Option[String], or
   val fmt = new SimpleDateFormat("yyyy-MM-dd")
   def toXml(): String = {
     val postBuilder = new StringBuilder
-    postBuilder.append(System.lineSeparator)
+    postBuilder
+      .append(System.lineSeparator)
       .append("<post>")
       .append(System.lineSeparator)
-      .append("<origin>")
-      .append(System.lineSeparator)
-      .append(origin.getOrElse("Undefined"))
-      .append(System.lineSeparator)
-      .append("</origin>")
-      .append("<charset>")
-      .append(System.lineSeparator)
-      .append(charset.getOrElse("Undefined"))
-      .append(System.lineSeparator)
-      .append("</charset>")
       .append("<subject>")
       .append(System.lineSeparator)
       .append(subject.getOrElse("Undefined"))

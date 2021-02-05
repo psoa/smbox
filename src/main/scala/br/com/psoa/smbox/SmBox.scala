@@ -11,6 +11,7 @@ import org.apache.james.mime4j.stream.MimeConfig
 
 import java.io.{BufferedInputStream, BufferedWriter, ByteArrayInputStream, ByteArrayOutputStream, File, FileOutputStream, InputStream, OutputStreamWriter, StringWriter}
 import java.nio.charset.{Charset, CharsetEncoder}
+import java.nio.file.{Files, Paths}
 
 case class SmBox (readPath : String, writePath : String, filterSubject: String, charsetName: String) {
 
@@ -23,7 +24,6 @@ case class SmBox (readPath : String, writePath : String, filterSubject: String, 
     println("Write directory:" + writePath)
     println("filter subject:" + filterSubject)
     println("charset:" + charsetName)
-
 
     messageBuilder.setContentDecoding(true)
     val config = new MimeConfig.Builder().setMaxLineLen(50000).build
@@ -47,20 +47,28 @@ case class SmBox (readPath : String, writePath : String, filterSubject: String, 
 
   def write (m: Option[SmBoxMessage], charsetName : String): Unit = m match {
     case Some (m) =>
+      val dir = String.valueOf(writePath + "/" + m.origin.getOrElse("Undefined") + "/" )
       if (m.charset.getOrElse("Undefined").toLowerCase.contains(charsetName)) {
-        write(m.getDate()
-          + "_" + m.origin.getOrElse("Undefined")
-          + ".xml", m.toXml())
+        val directory = new File(dir)
+        if (!directory.exists)
+          directory.mkdir
+        if (!Files.exists(Paths.get(dir + "/"  + m.getDate() + ".xml"))) {
+          val postBuilder = new StringBuilder
+          postBuilder.append("<?xml version=\"1.0\" encoding=\"")
+            .append(m.charset.getOrElse("Undefined"))
+            .append("\" ?>")
+          write(m.origin.getOrElse("Undefined"), m.getDate() + ".xml", postBuilder.toString())
+        }
+        write(m.origin.getOrElse("Undefined"), m.getDate() + ".xml", m.toXml())
       }
-      write("available_charset.txt", m.charset.getOrElse("Undefined"))
     case None => /* do nothing */
   }
 
-  def write (fileName: String, message: String): Unit = {
+  def write (filePath: String, fileName: String, message: String): Unit = {
     using(new BufferedWriter(new OutputStreamWriter(
-      new FileOutputStream(writePath + fileName, true), ENCODER.charset))) {
+      new FileOutputStream(writePath + "/" + filePath + "/" + fileName, true)
+        , ENCODER.charset))) {
       source => {
-        source.write(System.lineSeparator)
         source.write(message)
       }
     }
