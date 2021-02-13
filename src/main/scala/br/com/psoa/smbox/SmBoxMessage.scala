@@ -44,4 +44,9 @@ case class SmBoxMessage(val subject: Option[String], charset: Option[String], or
     case None => "Undefined"
   }
 
+  def fromXML (xml : String): Unit = {
+
+  }
+
+
 }
