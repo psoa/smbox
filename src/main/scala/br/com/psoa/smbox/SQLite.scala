@@ -1,61 +1,52 @@
 package br.com.psoa.smbox
 
+import br.com.psoa.smbox.Control.using
+import slick.jdbc.JdbcBackend
 import slick.jdbc.JdbcBackend.Database
 import slick.jdbc.SQLiteProfile.api._
+import slick.jdbc.meta.MTable
 
 import java.io.File
+import scala.concurrent.Await
 import scala.xml.XML
-import java.sql.Date
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.Duration
 import scala.xml.NodeSeq.Empty.text
 import scala.language.postfixOps
 
 
 case class SQLite(writeDB: String, readPath : String) {
 
-  val database = Database.forURL(
-    "jdbc:sqlite:/db/brainstorm.db" format writeDB,
-    driver = "org.sqlite.JDBC",
-    keepAliveConnection = true)
-
-
   def run() : Unit = {
-
-    println("Read directory:" + readPath)
-    println("Write database:" + writeDB)
-
-    val files = getListOfFiles(new File(readPath), List("xml"))
-    println("Iterate over the files bellow: (number of files [" + files.size + "])")
-
-    for (file <- files) {
-      try {
-        //println("Processing: " + file)
-        val xml = XML.loadFile(file)
-        val post = xml \\ "post" \\ "subject"
-
-        //println("the date: " + post.text)
-        //for (n <- xml.child) println(n)
-        // val subject = (xml \\ "subject" \ "@text") text
-        // val subject = (xml \\ "post" \\ "subject" \ "@text") text
-        // println(subject)
-      }catch {
-        case e: Throwable => println("Unable to parse" + file) //e.printStackTrace()
+    using (Database.forURL("jdbc:sqlite:"+ writeDB,
+      driver = "org.sqlite.JDBC", keepAliveConnection = true)) {
+      database => {
+        val posts = TableQuery[Post]
+        val files = FileUtil.getListOfFiles(new File(readPath), List("xml"))
+        println("Iterate over the files bellow: (number of files [" + files.size + "])")
+        val setup = DBIO.seq((posts.schema).createIfNotExists)
+        val setupResult = database.run(setup)
+        Await.result(setupResult, Duration.Inf)
+        files.foreach(file =>
+          Await.result(database.run(posts += xmlToPost(file)), Duration.Inf))
       }
     }
   }
 
-  def getListOfFiles(dir: File, extensions: List[String]): List[File] = {
-    dir.listFiles.filter(_.isFile).toList.filter { file =>
-      extensions.exists(file.getName.endsWith(_))
-    }
+  def xmlToPost(file: File) : (Int, String, String, String) = {
+    val xml = XML.loadFile(file)
+    (0
+      , ((xml \\ "post" \\ "subject") text).trim
+      , ((xml \\ "post" \\ "date") text).trim
+      , ((xml \\ "post" \\ "body") text).trim)
   }
 
-
-  class Post(tag: Tag) extends Table[(Int, String, Date, String)](tag, "POSTS") {
-    def id = column[Int]("SUP_ID", O.PrimaryKey) // This is the primary key column
-    def subject = column[String]("SUBJECT")
-    def date = column[Date]("DATE")
-    def body = column[String]("BODY")
+  class Post(tag: Tag) extends Table[(Int, String, String, String)](tag, "POST") {
+    def id = column[Int]("POST_ID", O.PrimaryKey, O.AutoInc) // This is the primary key column
+    def subject = column[String]("POST_SUBJECT")
+    def date = column[String]("POST_DATE")
+    def content = column[String]("POST_CONTENT")
     // Every table needs a * projection with the same type as the table's type parameter
-    def * = (id, subject, date, body)
+    def * = (id, subject, date, content)
   }
 }

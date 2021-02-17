@@ -1,5 +1,8 @@
 package br.com.psoa.smbox
 
+import java.io._
+import java.nio.charset.{Charset, CharsetEncoder}
+
 import br.com.psoa.smbox.Control.using
 import com.ibm.icu.text.CharsetDetector
 import org.apache.commons.io.IOUtils
@@ -8,10 +11,6 @@ import org.apache.james.mime4j.dom.{Body, Multipart, SingleBody}
 import org.apache.james.mime4j.mboxiterator.{CharBufferWrapper, MboxIterator}
 import org.apache.james.mime4j.message.DefaultMessageBuilder
 import org.apache.james.mime4j.stream.MimeConfig
-
-import java.io.{BufferedInputStream, BufferedWriter, ByteArrayInputStream, ByteArrayOutputStream, File, FileOutputStream, InputStream, OutputStreamWriter, StringWriter}
-import java.nio.charset.{Charset, CharsetEncoder}
-import java.nio.file.{Files, Paths}
 
 case class SmBox (readPath : String, writePath : String, filterSubject: String, charsetName: String) {
 
@@ -28,17 +27,17 @@ case class SmBox (readPath : String, writePath : String, filterSubject: String, 
     messageBuilder.setContentDecoding(true)
     val config = new MimeConfig.Builder().setMaxLineLen(50000).build
     messageBuilder.setMimeEntityConfig(config)
-    val files = getListOfFiles(new File(readPath), List("mbox"))
+    val files = FileUtil.getListOfFiles(new File(readPath), List("mbox"))
     println("Iterate over the files bellow: (number of files [" + files.size + "])")
 
     for (file <- files) {
       try {
         println("Processing" + file + " with charset: " + charsetName)
-        val messages = MboxIterator
+        MboxIterator
           .fromFile(file)
           .maxMessageSize(50 * 1024 * 1024) //MAX Gmail size for a single message
           .build
-        messages.forEach(message => write(parseMessage(message, file.getName), charsetName))
+          .forEach(message => write(fromMBOXToMessage(message, file.getName), charsetName))
       }catch {
         case e: Throwable => e.printStackTrace()
       }
@@ -47,26 +46,33 @@ case class SmBox (readPath : String, writePath : String, filterSubject: String, 
 
   def write (m: Option[SmBoxMessage], charsetName : String): Unit = m match {
     case Some (m) =>
-      val dir = String.valueOf(writePath + "/" + m.origin.getOrElse("Undefined") + "/" )
-      if (m.charset.getOrElse("Undefined").toLowerCase.contains(charsetName)) {
-        val directory = new File(dir)
-        if (!directory.exists)
-          directory.mkdir
-        if (!Files.exists(Paths.get(dir + "/"  + m.getDate() + ".xml"))) {
-          val postBuilder = new StringBuilder
-          postBuilder.append("<?xml version=\"1.0\" encoding=\"")
-            .append(m.charset.getOrElse("Undefined"))
-            .append("\" ?>")
-          write(m.origin.getOrElse("Undefined"), m.getDate() + ".xml", postBuilder.toString())
-        }
-        write(m.origin.getOrElse("Undefined"), m.getDate() + ".xml", m.toXml())
-      }
+      val dirOrigin = String.valueOf(writePath + "/" + m.origin.getOrElse("Undefined") + "/")
+      val directoryOrigin = new File(dirOrigin)
+      if (!directoryOrigin.exists)
+        directoryOrigin.mkdir
+      val dir = String.valueOf(writePath + "/" + m.origin.getOrElse("Undefined") + "/" + charsetName + "/")
+      val directory = new File(dir)
+      if (!directory.exists)
+        directory.mkdir
+      val file = fileToWrite(dir, m.getDate(), 0)
+      val postBuilder = new StringBuilder
+        postBuilder.append("<?xml version=\"1.0\" encoding=\"")
+          .append(charsetName)
+          .append("\" ?>")
+          .append(m.toXml())
+      write(file.getAbsolutePath, postBuilder.toString())
     case None => /* do nothing */
   }
 
-  def write (filePath: String, fileName: String, message: String): Unit = {
+  def fileToWrite(dir: String, fileName: String, suffix: Int): File = {
+    val file =  if (suffix == 0)
+       new File(dir + "/"  + fileName  + ".xml") else new File(dir + "/"  + fileName + "_" + suffix  + ".xml")
+    if (file.exists()) fileToWrite(dir, fileName, suffix + 1) else file
+  }
+
+  def write (file: String, message: String): Unit = {
     using(new BufferedWriter(new OutputStreamWriter(
-      new FileOutputStream(writePath + "/" + filePath + "/" + fileName, true)
+      new FileOutputStream(file, true)
         , ENCODER.charset))) {
       source => {
         source.write(message)
@@ -74,13 +80,7 @@ case class SmBox (readPath : String, writePath : String, filterSubject: String, 
     }
   }
 
-  def getListOfFiles(dir: File, extensions: List[String]): List[File] = {
-    dir.listFiles.filter(_.isFile).toList.filter { file =>
-      extensions.exists(file.getName.endsWith(_))
-    }
-  }
-
-  def parseMessage(message: CharBufferWrapper, fileName: String) : Option[SmBoxMessage] = {
+  def fromMBOXToMessage(message: CharBufferWrapper, fileName: String) : Option[SmBoxMessage] = {
     try {
       val mail = messageBuilder.parseMessage(new ByteArrayInputStream(message.toString.getBytes))
       val subject = Option(mail.getSubject)
@@ -92,7 +92,8 @@ case class SmBox (readPath : String, writePath : String, filterSubject: String, 
       }
     }catch {
       case e: MimeIOException => println(e.getMessage) //For now just ignore
-      case e: Throwable => e.printStackTrace()
+      case e: Throwable => println(e.getMessage)
+
     }
     None
   }
@@ -111,7 +112,7 @@ case class SmBox (readPath : String, writePath : String, filterSubject: String, 
       Some(bao.toString(ENCODER.charset))
       val writer = new StringWriter
       IOUtils.copy(body.getInputStream, writer,
-        detectCharset(charset.getOrElse("UTF-8"), body.getInputStream))
+        detectCharset(charset.getOrElse("iso-8859-1"), body.getInputStream))
       Some(writer.toString)
     case _ =>
       println("Unhandled body type")
