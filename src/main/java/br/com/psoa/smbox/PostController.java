@@ -1,0 +1,77 @@
+package br.com.psoa.smbox;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+
+import br.com.psoa.smbox.model.Post;
+
+@Controller
+public class PostController {
+    
+    @Autowired
+    private PostRepository postRepository;
+    
+    @GetMapping("/posts")
+    public String getAllPosts(Model model) {
+        List<Post> posts = postRepository.findAll();
+        model.addAttribute("posts", posts);
+        return "list";
+    }
+  
+    @GetMapping("/{id}")
+    public String showPost(@PathVariable("id") Long id, Model model) {
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid post ID: " + id));
+        model.addAttribute("post", post);
+        return "show";
+    }
+
+    @GetMapping("/add")
+    public String showAddForm(Model model) {
+        model.addAttribute("post", new Post());
+        return "add";
+    }
+    
+    @GetMapping("/edit/{id}")
+    public String showEditForm(@PathVariable("id") Long id, Model model) {
+      Post post = postRepository.findById(id)
+              .orElseThrow(() -> new IllegalArgumentException("Invalid post ID: " + id));
+      model.addAttribute("post", post);
+      return "edit";
+    }
+
+    @GetMapping("/delete/{id}")
+    @Transactional
+    public String delete(@PathVariable("id") Long id) {
+      postRepository.deleteById(id);
+      return "redirect:/posts";
+    }
+
+
+    @PostMapping("/add")
+    public String addPost(@ModelAttribute("post") Post post, BindingResult result) {
+      if (result.hasErrors()) {
+        return "add";
+      }
+      postRepository.save(post);
+      return "redirect:/posts";
+    }
+
+    @PostMapping("/edit")
+    public String editPost(@ModelAttribute("post") Post post, BindingResult result) {
+      if (result.hasErrors()) {
+        return "edit";
+      }
+      postRepository.save(post);
+      return "redirect:/posts";
+    }
+}

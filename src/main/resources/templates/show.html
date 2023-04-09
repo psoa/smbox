@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Show Post</title>
+</head>
+<body>
+    <h1>Show Post</h1>
+    <table>
+        <tr>
+            <td>ID:</td>
+            <td th:text="${post.id}"></td>
+        </tr>
+        <tr>
+            <td>Date:</td>
+            <td th:text="${post.date}"></td>
+        </tr>
+        <tr>
+            <td>Subject:</td>
+            <td th:text="${post.subject}"></td>
+        </tr>
+        <tr>
+            <td>Content:</td>
+            <td th:text="${post.content}"></td>
+        </tr>
+    </table>
+    <a th:href="@{/edit/{id}(id=${post.id})}">Edit</a>
+    <a th:href="@{/delete/{id}(id=${post.id})}">Delete</a>
+    
+</body>
+</html>

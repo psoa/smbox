@@ -1,0 +1,26 @@
+<!-- add.html -->
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Add New Post</title>
+</head>
+<body>
+    <h1>Add New Post</h1>
+    <form action="#" th:action="@{/add}" th:object="${post}" method="post">
+        <div>
+            <label for="subject">Subject:</label>
+            <input type="text" id="subject" th:field="*{subject}">
+        </div>
+        <div>
+            <label for="date">Date:</label>
+            <input type="text" id="date" th:field="*{date}">
+        </div>
+        <div>
+            <label for="content">Content:</label>
+            <textarea id="content" th:field="*{content}"></textarea>
+        </div>
+        <button type="submit">Add Post</button>
+    </form>
+</body>
+</html>

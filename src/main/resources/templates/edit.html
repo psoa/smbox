@@ -1,0 +1,29 @@
+<!-- add.html -->
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Add New Post</title>
+</head>
+<body>
+    <h1>Edit Post</h1>
+	
+	<form action="#" th:action="@{/edit}" th:object="${post}" method="post">
+	  <input type="hidden" th:field="*{id}" />
+	  <div>
+	    <label for="date">Date:</label>
+	    <input type="text" th:field="*{date}" />
+	  </div>
+	  <div>
+	    <label for="subject">Subject:</label>
+	    <input type="text" th:field="*{subject}" />
+	  </div>
+	  <div>
+	    <label for="content">Content:</label>
+	    <textarea th:field="*{content}"></textarea>
+	  </div>
+	  <button type="submit">Save Changes</button>
+	</form>
+</body>
+</html>
+	

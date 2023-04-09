@@ -27,3 +27,11 @@ project/plugins/project/
 *.iws
 .idea
 out
+
+.classpath
+.gradle/
+.project
+.settings/
+bin/
+gradle/
+
