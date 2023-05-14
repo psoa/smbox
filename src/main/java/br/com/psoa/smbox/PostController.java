@@ -3,6 +3,7 @@ package br.com.psoa.smbox;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -20,9 +21,14 @@ public class PostController {
     @Autowired
     private PostRepository postRepository;
     
+    @GetMapping("/")
+    public String index() {
+        return "redirect:/posts";
+    }    
+
     @GetMapping("/posts")
     public String getAllPosts(Model model) {
-        List<Post> posts = postRepository.findAll();
+        List<Post> posts = postRepository.findAll(Sort.by("date").descending());
         model.addAttribute("posts", posts);
         return "list";
     }

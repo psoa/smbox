@@ -1,16 +1,70 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <title>Show Post</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f8f8;
+            color: #333;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        table {
+            margin: 50px auto;
+            border-collapse: collapse;
+            border: 1px solid #ccc;
+            box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.3);
+            width: 50%;
+            background-color: #fff;
+        }
+        
+        th,
+        td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ccc;
+        }
+        
+        th {
+            background-color: #f2f2f2;
+        }
+        
+        td:last-child {
+            text-align: center;
+        }
+        
+        a {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            text-decoration: none;
+            background-color: #007bff;
+            color: #fff;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        
+        a:hover {
+            background-color: #333;
+        }
+    </style>
 </head>
+
 <body>
     <h1>Show Post</h1>
+    
+    <a th:href="@{/edit/{id}(id=${post.id})}">Edit</a>
+    <a th:href="@{/delete/{id}(id=${post.id})}">Delete</a>
+    <a th:href="@{/posts}">Voltar</a>
+
     <table>
-        <tr>
-            <td>ID:</td>
-            <td th:text="${post.id}"></td>
-        </tr>
         <tr>
             <td>Date:</td>
             <td th:text="${post.date}"></td>
@@ -20,12 +74,10 @@
             <td th:text="${post.subject}"></td>
         </tr>
         <tr>
-            <td>Content:</td>
+            <td></td>
             <td th:text="${post.content}"></td>
         </tr>
     </table>
-    <a th:href="@{/edit/{id}(id=${post.id})}">Edit</a>
-    <a th:href="@{/delete/{id}(id=${post.id})}">Delete</a>
-    
 </body>
+
 </html>

@@ -12,6 +12,10 @@ repositories {
 	mavenCentral()
 }
 
+springBoot {
+    mainClass = 'br.com.psoa.smbox.Application'
+}
+
 dependencies {
 
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -29,4 +33,9 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+
+bootJar {
+    archiveFileName = 'smbox.jar'
 }
