@@ -1,3 +1,4 @@
+
 package br.com.psoa.smbox;
 
 import org.springframework.boot.SpringApplication;
