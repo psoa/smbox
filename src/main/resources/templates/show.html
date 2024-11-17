@@ -37,7 +37,7 @@
         }
         
         td:last-child {
-            text-align: center;
+            text-align: left;
         }
         
         a {
@@ -53,6 +53,10 @@
         
         a:hover {
             background-color: #333;
+        }
+
+        .content {
+            white-space: pre-wrap;
         }
     </style>
 </head>
@@ -75,7 +79,7 @@
         </tr>
         <tr>
             <td></td>
-            <td th:text="${post.content}"></td>
+            <td class="content" th:text="${post.content}"></td>
         </tr>
     </table>
 </body>

@@ -1,5 +1,6 @@
 package br.com.psoa.smbox;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import java.text.SimpleDateFormat;
 
 import br.com.psoa.smbox.model.Post;
 
@@ -43,7 +45,18 @@ public class PostController {
 
     @GetMapping("/add")
     public String showAddForm(Model model) {
-        model.addAttribute("post", new Post());
+        var post = new Post();
+        var date = new Date();
+
+        var dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        var formattedDate = dateFormat.format(date);
+        post.setDate(formattedDate);
+
+        var subjectDateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        var formattedSubjectDate = subjectDateFormat.format(date);
+        post.setSubject("Brainstorm " + formattedSubjectDate);
+
+        model.addAttribute("post", post);
         return "add";
     }
     

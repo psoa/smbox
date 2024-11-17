@@ -22,7 +22,7 @@ public class Post {
     @Column(name = "post_subject")
     private String subject;
     
-    @Column(name = "post_content")
+    @Column(columnDefinition = "TEXT", name = "post_content")
     private String content;
     
     // Constructors, getters and setters, and other methods
