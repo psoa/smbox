@@ -13,13 +13,12 @@ repositories {
 }
 
 springBoot {
-    mainClass = 'br.com.psoa.smbox.Application'
+    mainClass = 'br.com.psoa.smbox.SmboxApplication'
 }
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.xerial:sqlite-jdbc:3.36.0.3'
-    implementation 'org.hibernate.orm:hibernate-community-dialects:6.0.0.Final'
+	implementation 'org.hibernate.orm:hibernate-community-dialects:6.0.0.Final'
 	implementation 'org.xerial:sqlite-jdbc:3.45.2.0'
 	implementation 'org.hibernate:hibernate-core:6.2.0.Final'
 	implementation 'org.springframework.boot:spring-boot-starter-data-rest'
@@ -35,5 +34,48 @@ tasks.named('test') {
 
 
 bootJar {
-    archiveFileName = 'smbox.jar'
+	archiveFileName = "smbox-${version}.jar"
+}
+
+tasks.register('copyFiles', Copy) {
+	from bootJar
+	into "${System.getenv('HOME')}/smbox"
+	rename { String fileName ->
+		fileName.replace("smbox-${version}.jar", "smbox.jar")
+	}
+}
+
+/*// Task to build the React application
+task buildFrontend(type: Exec) {
+	workingDir 'frontend'
+	commandLine 'npm', 'install'
+	commandLine 'npm', 'run', 'build'
+}
+
+// Task to copy the React build output to the resources directory
+task copyFrontend(type: Copy) {
+	dependsOn buildFrontend
+	from 'frontend/build'
+	into 'src/main/resources/static'
+}
+*/
+
+tasks.register('copyHelp', Copy) {
+	from 'HELP.md'
+	into "${System.getenv('HOME')}/smbox"
+}
+
+tasks.register('copyRun', Copy) {
+	from 'run.sh'
+	into "${System.getenv('HOME')}/smbox"
+}
+
+tasks.register('makeExecutable', Exec) {
+	commandLine 'chmod', '+x', "${System.getenv('HOME')}/smbox/run.sh"
+}
+
+
+tasks.register('buildAndCopy') {
+	dependsOn bootJar
+	finalizedBy 'copyFiles', 'copyHelp', 'copyRun', 'makeExecutable'
 }
