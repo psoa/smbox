@@ -1,80 +1,66 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Edit Post</title>
-    <style>
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            background-color: #f5f5f5;
-        }
-        
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-        
-        form {
-            display: flex;
-            flex-direction: column;
-            width: 50%;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #fff;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-shadow: 0px 0px 5px #ccc;
-        }
-        
-        input[type="text"], textarea {
-            padding: 5px;
-            margin: 10px 0;
-            border-radius: 3px;
-            border: 1px solid #ccc;
-            font-size: 1rem;
-            white-space: pre-wrap;
-        }
-        
-        label {
-            font-size: 1rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        
-        button[type="submit"] {
-            padding: 10px 20px;
-            border-radius: 3px;
-            border: none;
-            background-color: #007bff;
-            color: #fff;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        
-        button[type="submit"]:hover {
-            background-color: #0069d9;
-        }
-    </style>
-</head>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::content}, 'Edit Post')}">
 <body>
-    <h1>Edit Post</h1>
-	<a th:href="@{/posts}">Voltar</a>
-	<form action="#" th:action="@{/edit}" th:object="${post}" method="post">
-	  <input type="hidden" th:field="*{id}" />
-	  <div>
-	    <label for="date">Date:</label>
-	    <input type="text" th:field="*{date}" />
-	  </div>
-	  <div>
-	    <label for="subject">Subject:</label>
-	    <input type="text" th:field="*{subject}" />
-	  </div>
-	  <div>
-	    <label for="content">Content:</label>
-	    <textarea th:field="*{content}" rows="20" cols="70"></textarea>
-	  </div>
-	  <button type="submit">Save Changes</button>
-	</form>
+<div th:fragment="content">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h1 class="page-title">
+                <i class="fas fa-edit me-2"></i>Edit Post
+            </h1>
+            
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-pen me-2"></i>Update Your Post
+                    </h4>
+                    <small>Make changes to your brainstorm entry</small>
+                </div>
+                <div class="card-body p-4">
+                    <form th:action="@{/edit}" th:object="${post}" method="post">
+                        <input type="hidden" th:field="*{id}" />
+                        
+                        <div class="mb-4">
+                            <label for="date" class="form-label">
+                                <i class="fas fa-calendar me-2"></i>Date
+                            </label>
+                            <input type="date" class="form-control" id="date" th:field="*{date}" required>
+                            <div class="form-text">When did this idea come to you?</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="subject" class="form-label">
+                                <i class="fas fa-bookmark me-2"></i>Subject
+                            </label>
+                            <input type="text" class="form-control" id="subject" th:field="*{subject}" 
+                                   placeholder="Enter a catchy title for your post" required>
+                            <div class="form-text">Give your post a descriptive title</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="content" class="form-label">
+                                <i class="fas fa-edit me-2"></i>Content
+                            </label>
+                            <textarea class="form-control" id="content" th:field="*{content}" rows="15" 
+                                      placeholder="Write your thoughts, ideas, or brainstorm here..." required></textarea>
+                            <div class="form-text">Update your ideas and thoughts</div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a th:href="@{/posts}" class="btn btn-outline-secondary me-md-2">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                            <a th:href="@{/{id}(id=${post.id})}" class="btn btn-outline-primary me-md-2">
+                                <i class="fas fa-eye me-2"></i>View Post
+                            </a>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-save me-2"></i>Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>

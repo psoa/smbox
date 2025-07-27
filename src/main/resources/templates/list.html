@@ -1,64 +1,68 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Brainstorm</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #f5f5f5;
-        }
-        h1 {
-            margin-top: 50px;
-            color: #007bff;
-        }
-        table {
-            margin-top: 50px;
-            border-collapse: collapse;
-            width: 50%;
-            margin: auto;
-            background-color: white;
-        }
-        th, td {
-            padding: 8px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        th {
-            background-color: #007bff;
-            color: white;
-            font-weight: bold;
-        }
-        a {
-            color: #007bff;
-            text-decoration: none;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-    </style>
-</head>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::content}, 'All Posts - Brainstorm')}">
 <body>
-    <h1>Brainstorm</h1>
-    <a th:href="@{/add}">Create a new post</a>
-    <table>
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Subject</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr th:each="post : ${posts}">
-                <td th:text="${post.date}"></td>
-                <td th:text="${post.subject}"></td>
-                <td>
-                    <a th:href="@{/{id}(id=${post.id})}">Show</a>
-		        </td>
-            </tr>
-        </tbody>
-    </table>
+<div th:fragment="content">
+    <h1 class="page-title">
+        <i class="fas fa-brain me-2"></i>Brainstorm
+    </h1>
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <span class="badge bg-primary fs-6" th:text="${#lists.size(posts)} + ' posts found'">0 posts found</span>
+        </div>
+        <a th:href="@{/add}" class="btn btn-success">
+            <i class="fas fa-plus me-2"></i>Create New Post
+        </a>
+    </div>
+
+    <div th:if="${#lists.isEmpty(posts)}" class="text-center py-5">
+        <i class="fas fa-lightbulb fa-4x text-muted mb-3"></i>
+        <h3 class="text-muted">No posts yet!</h3>
+        <p class="text-muted">Start your brainstorm journey by creating your first post.</p>
+        <a th:href="@{/add}" class="btn btn-primary btn-lg">
+            <i class="fas fa-plus me-2"></i>Create Your First Post
+        </a>
+    </div>
+
+    <div th:if="${!#lists.isEmpty(posts)}" class="row">
+        <div class="col-12">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col"><i class="fas fa-calendar me-2"></i>Date</th>
+                            <th scope="col"><i class="fas fa-bookmark me-2"></i>Subject</th>
+                            <th scope="col" class="text-center"><i class="fas fa-cogs me-2"></i>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="post : ${posts}">
+                            <td>
+                                <span class="badge bg-light text-dark" 
+                                      th:text="${#strings.substring(post.date, 8, 10) + '/' + #strings.substring(post.date, 5, 7) + '/' + #strings.substring(post.date, 0, 4)}"></span>
+                            </td>
+                            <td>
+                                <strong th:text="${post.subject}"></strong>
+                                <div th:if="${#strings.length(post.content) > 100}" class="text-muted small">
+                                    <span th:text="${#strings.substring(post.content, 0, 100)} + '...'"></span>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group" role="group">
+                                    <a th:href="@{/{id}(id=${post.id})}" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
+                                    <a th:href="@{/edit/{id}(id=${post.id})}" class="btn btn-outline-secondary btn-sm">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>
