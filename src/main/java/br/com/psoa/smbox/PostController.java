@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 import java.text.SimpleDateFormat;
 
 import br.com.psoa.smbox.model.Post;
@@ -29,9 +31,21 @@ public class PostController {
     }    
 
     @GetMapping("/posts")
-    public String getAllPosts(Model model) {
-        List<Post> posts = postRepository.findAll(Sort.by("date").descending());
+    public String getAllPosts(Model model, @RequestParam(required = false) String search) {
+        List<Post> posts;
+        if (search != null && !search.trim().isEmpty()) {
+            posts = postRepository.findAll(Sort.by("date").descending()).stream()
+                .filter(post -> 
+                    post.getSubject().toLowerCase().contains(search.toLowerCase()) ||
+                    post.getContent().toLowerCase().contains(search.toLowerCase()) ||
+                    post.getDate().contains(search)
+                )
+                .toList();
+        } else {
+            posts = postRepository.findAll(Sort.by("date").descending());
+        }
         model.addAttribute("posts", posts);
+        model.addAttribute("search", search != null ? search : "");
         return "list";
     }
   

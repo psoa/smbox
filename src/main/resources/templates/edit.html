@@ -2,65 +2,44 @@
 <html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::content}, 'Edit Post')}">
 <body>
 <div th:fragment="content">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <h1 class="page-title">
-                <i class="fas fa-edit me-2"></i>Edit Post
-            </h1>
-            
-            <div class="card">
-                <div class="card-header bg-warning text-dark">
-                    <h4 class="card-title mb-0">
-                        <i class="fas fa-pen me-2"></i>Update Your Post
-                    </h4>
-                    <small>Make changes to your brainstorm entry</small>
-                </div>
-                <div class="card-body p-4">
-                    <form th:action="@{/edit}" th:object="${post}" method="post">
-                        <input type="hidden" th:field="*{id}" />
-                        
-                        <div class="mb-4">
-                            <label for="date" class="form-label">
-                                <i class="fas fa-calendar me-2"></i>Date
-                            </label>
-                            <input type="date" class="form-control" id="date" th:field="*{date}" required>
-                            <div class="form-text">When did this idea come to you?</div>
-                        </div>
+    <h1 class="page-title text-start mb-4">Edit Post</h1>
+    
+    <form th:action="@{/edit}" th:object="${post}" method="post">
+        <input type="hidden" th:field="*{id}" />
+        
+        <div class="mb-4">
+            <label for="date" class="form-label">Date</label>
+            <input type="date" class="form-control" id="date" th:field="*{date}" required>
+        </div>
 
-                        <div class="mb-4">
-                            <label for="subject" class="form-label">
-                                <i class="fas fa-bookmark me-2"></i>Subject
-                            </label>
-                            <input type="text" class="form-control" id="subject" th:field="*{subject}" 
-                                   placeholder="Enter a catchy title for your post" required>
-                            <div class="form-text">Give your post a descriptive title</div>
-                        </div>
+        <div class="mb-4">
+            <label for="subject" class="form-label">Title</label>
+            <input type="text" class="form-control" id="subject" th:field="*{subject}" 
+                   placeholder="Give your post a title" required>
+        </div>
 
-                        <div class="mb-4">
-                            <label for="content" class="form-label">
-                                <i class="fas fa-edit me-2"></i>Content
-                            </label>
-                            <textarea class="form-control" id="content" th:field="*{content}" rows="15" 
-                                      placeholder="Write your thoughts, ideas, or brainstorm here..." required></textarea>
-                            <div class="form-text">Update your ideas and thoughts</div>
-                        </div>
+        <div class="mb-4">
+            <label for="content" class="form-label">Content</label>
+            <textarea class="form-control content-textarea" id="content" th:field="*{content}" rows="15" 
+                      placeholder="Write your thoughts here..." required></textarea>
+        </div>
 
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <a th:href="@{/posts}" class="btn btn-outline-secondary me-md-2">
-                                <i class="fas fa-times me-2"></i>Cancel
-                            </a>
-                            <a th:href="@{/{id}(id=${post.id})}" class="btn btn-outline-primary me-md-2">
-                                <i class="fas fa-eye me-2"></i>View Post
-                            </a>
-                            <button type="submit" class="btn btn-warning">
-                                <i class="fas fa-save me-2"></i>Save Changes
-                            </button>
-                        </div>
-                    </form>
-                </div>
+        <div class="divider"></div>
+
+        <div class="d-flex justify-content-between align-items-center pt-3">
+            <a th:href="@{/posts}" class="btn btn-outline-secondary">
+                Cancel
+            </a>
+            <div>
+                <a th:href="@{/{id}(id=${post.id})}" class="btn btn-outline-secondary me-2">
+                    <i class="fas fa-eye me-1"></i>Preview
+                </a>
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-check me-2"></i>Update
+                </button>
             </div>
         </div>
-    </div>
+    </form>
 </div>
 </body>
 </html>

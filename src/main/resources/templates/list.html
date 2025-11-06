@@ -1,68 +1,97 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::content}, 'All Posts - Brainstorm')}">
 <body>
-<div th:fragment="content">
-    <h1 class="page-title">
-        <i class="fas fa-brain me-2"></i>Brainstorm
-    </h1>
-    
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <span class="badge bg-primary fs-6" th:text="${#lists.size(posts)} + ' posts found'">0 posts found</span>
-        </div>
-        <a th:href="@{/add}" class="btn btn-success">
-            <i class="fas fa-plus me-2"></i>Create New Post
-        </a>
-    </div>
-
-    <div th:if="${#lists.isEmpty(posts)}" class="text-center py-5">
-        <i class="fas fa-lightbulb fa-4x text-muted mb-3"></i>
-        <h3 class="text-muted">No posts yet!</h3>
-        <p class="text-muted">Start your brainstorm journey by creating your first post.</p>
-        <a th:href="@{/add}" class="btn btn-primary btn-lg">
-            <i class="fas fa-plus me-2"></i>Create Your First Post
-        </a>
-    </div>
-
-    <div th:if="${!#lists.isEmpty(posts)}" class="row">
-        <div class="col-12">
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th scope="col"><i class="fas fa-calendar me-2"></i>Date</th>
-                            <th scope="col"><i class="fas fa-bookmark me-2"></i>Subject</th>
-                            <th scope="col" class="text-center"><i class="fas fa-cogs me-2"></i>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="post : ${posts}">
-                            <td>
-                                <span class="badge bg-light text-dark" 
-                                      th:text="${#strings.substring(post.date, 8, 10) + '/' + #strings.substring(post.date, 5, 7) + '/' + #strings.substring(post.date, 0, 4)}"></span>
-                            </td>
-                            <td>
-                                <strong th:text="${post.subject}"></strong>
-                                <div th:if="${#strings.length(post.content) > 100}" class="text-muted small">
-                                    <span th:text="${#strings.substring(post.content, 0, 100)} + '...'"></span>
-                                </div>
-                            </td>
-                            <td class="text-center">
-                                <div class="btn-group" role="group">
-                                    <a th:href="@{/{id}(id=${post.id})}" class="btn btn-primary btn-sm">
-                                        <i class="fas fa-eye"></i> View
-                                    </a>
-                                    <a th:href="@{/edit/{id}(id=${post.id})}" class="btn btn-outline-secondary btn-sm">
-                                        <i class="fas fa-edit"></i> Edit
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+<div th:fragment="content" class="scrollable">
+    <div class="posts-header">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="page-title mb-2">All Posts</h1>
+                <p class="post-meta" th:text="${#lists.size(posts)} + ' ' + (${#lists.size(posts)} == 1 ? 'post' : 'posts')">0 posts</p>
             </div>
+            <a th:href="@{/add}" class="btn btn-success">
+                <i class="fas fa-plus me-2"></i>Write
+            </a>
+        </div>
+
+        <!-- Search Bar -->
+        <form method="get" action="/posts" class="search-bar">
+            <i class="fas fa-search search-icon"></i>
+            <input 
+                type="text" 
+                name="search" 
+                class="form-control" 
+                placeholder="Search by title, content, or date (YYYY-MM-DD)..." 
+                th:value="${search}"
+                autocomplete="off">
+            <button type="submit" class="btn btn-primary search-button" title="Search">
+                <i class="fas fa-search"></i>
+            </button>
+            <button type="button" class="clear-search" onclick="clearSearch()" title="Clear search" th:if="${search != null && search != ''}">
+                <i class="fas fa-times"></i>
+            </button>
+        </form>
+
+        <div th:if="${search != null && search != ''}" class="search-results-text">
+            <span th:if="${#lists.size(posts) > 0}">
+                Found <strong th:text="${#lists.size(posts)}">0</strong> result(s) for "<strong th:text="${search}"></strong>"
+            </span>
+            <span th:if="${#lists.isEmpty(posts)}">
+                No results found for "<strong th:text="${search}"></strong>"
+            </span>
+        </div>
+
+        <div class="divider"></div>
+    </div>
+
+    <div class="posts-scroll-container">
+        <div th:if="${#lists.isEmpty(posts) && (search == null || search == '')}" class="empty-state">
+            <i class="fas fa-feather-alt"></i>
+            <h3>No posts yet</h3>
+            <p>Start writing your first post to begin your journey.</p>
+            <a th:href="@{/add}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Create Your First Post
+            </a>
+        </div>
+
+        <div th:if="${#lists.isEmpty(posts) && search != null && search != ''}" class="empty-state">
+            <i class="fas fa-search"></i>
+            <h3>No matches found</h3>
+            <p>Try adjusting your search terms or <a href="/posts">view all posts</a>.</p>
+        </div>
+
+        <div th:if="${!#lists.isEmpty(posts)}">
+            <article class="card" th:each="post : ${posts}">
+                <div class="card-body">
+                    <h2 class="post-title">
+                        <a th:href="@{/{id}(id=${post.id})}" th:text="${post.subject}">Post Title</a>
+                    </h2>
+                    <div class="post-date mb-3">
+                        <i class="far fa-calendar me-1"></i>
+                        <span th:text="${#temporals.format(#temporals.createDate(#strings.substring(post.date, 0, 4) + '-' + #strings.substring(post.date, 5, 7) + '-' + #strings.substring(post.date, 8, 10)), 'MMMM d, yyyy')}">Date</span>
+                    </div>
+                    <div th:if="${#strings.length(post.content) > 0}" class="post-excerpt">
+                        <span th:text="${#strings.length(post.content) > 200 ? #strings.substring(post.content, 0, 200) + '...' : post.content}"></span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <a th:href="@{/{id}(id=${post.id})}" class="text-decoration-none">
+                            Read more →
+                        </a>
+                        <div>
+                            <a th:href="@{/edit/{id}(id=${post.id})}" class="btn btn-sm btn-outline-secondary me-2">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </article>
         </div>
     </div>
+
+    <script>
+        function clearSearch() {
+            window.location.href = '/posts';
+        }
+    </script>
 </div>
 </body>
 </html>

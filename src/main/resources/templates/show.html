@@ -2,60 +2,38 @@
 <html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::content}, 'Show Post')}">
 <body>
 <div th:fragment="content">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="page-title mb-0">
-            <i class="fas fa-file-alt me-2"></i>Detalhes
-        </h1>
-    </div>
-
-    <div class="row">
-        <div class="col-md-8 mx-auto">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="card-title mb-0" th:text="${post.subject}">Post Subject</h4>
-                    <small>
-                        <i class="fas fa-calendar me-1"></i>
-                        <span th:text="${post.date}">Date</span>
-                    </small>
-                </div>
-                <div class="card-body">
-                    <div class="post-content" th:text="${post.content}">
-                        Post content will appear here...
-                    </div>
-                </div>
-                <div class="card-footer bg-light">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <small class="text-muted">
-                            <i class="fas fa-info-circle me-1"></i>
-                            Post ID: <span th:text="${post.id}">1</span>
-                        </small>
-                        <div class="btn-group btn-group-sm" role="group">
-                            <a th:href="@{/edit/{id}(id=${post.id})}" class="btn btn-outline-primary">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <a th:href="@{/delete/{id}(id=${post.id})}" class="btn btn-outline-danger"
-                               onclick="return confirm('Are you sure you want to delete this post?')">
-                                <i class="fas fa-trash"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
+    <article>
+        <header class="mb-4">
+            <h1 class="page-title text-start" th:text="${post.subject}">Post Subject</h1>
+            <div class="post-date mb-4">
+                <i class="far fa-calendar me-1"></i>
+                <span th:text="${#temporals.format(#temporals.createDate(#strings.substring(post.date, 0, 4) + '-' + #strings.substring(post.date, 5, 7) + '-' + #strings.substring(post.date, 8, 10)), 'MMMM d, yyyy')}">Date</span>
             </div>
-        </div>
-    </div>
+        </header>
 
-    <!-- Navigation between posts -->
-    <div class="row mt-4">
-        <div class="col-12">
-            <nav aria-label="Post navigation">
-                <div class="d-flex justify-content-center">
-                    <a th:href="@{/posts}" class="btn btn-outline-primary">
-                        <i class="fas fa-list me-2"></i>View All Posts
-                    </a>
-                </div>
-            </nav>
+        <div class="divider"></div>
+
+        <div class="post-content mb-5" th:text="${post.content}">
+            Post content will appear here...
         </div>
-    </div>
+
+        <div class="divider"></div>
+
+        <footer class="d-flex justify-content-between align-items-center pt-3">
+            <a th:href="@{/posts}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to posts
+            </a>
+            <div>
+                <a th:href="@{/edit/{id}(id=${post.id})}" class="btn btn-outline-secondary me-2">
+                    <i class="fas fa-edit me-1"></i>Edit
+                </a>
+                <a th:href="@{/delete/{id}(id=${post.id})}" class="btn btn-outline-danger"
+                   onclick="return confirm('Are you sure you want to delete this post?')">
+                    <i class="fas fa-trash me-1"></i>Delete
+                </a>
+            </div>
+        </footer>
+    </article>
 </div>
 </body>
 </html>
