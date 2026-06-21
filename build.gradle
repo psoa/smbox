@@ -68,13 +68,13 @@ tasks.register('copyHelp', Copy) {
 }
 
 tasks.register('copyRun', Copy) {
-	from 'run.sh'
+	from 'run.sh', 'stop.sh'
 	into deployDir
 }
 
 tasks.register('makeExecutable', Exec) {
 	dependsOn 'copyRun'
-	commandLine 'chmod', '+x', "${deployDir}/run.sh"
+	commandLine 'bash', '-c', "chmod +x ${deployDir}/run.sh ${deployDir}/stop.sh"
 }
 
 tasks.register('stopApp', Exec) {
