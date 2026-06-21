@@ -73,10 +73,12 @@ tasks.register('copyRun', Copy) {
 }
 
 tasks.register('makeExecutable', Exec) {
+	dependsOn 'copyRun'
 	commandLine 'chmod', '+x', "${deployDir}/run.sh"
 }
 
 tasks.register('stopApp', Exec) {
+	dependsOn 'copyFiles', 'copyHelp', 'makeExecutable'
 	commandLine 'bash', '-c',
 		"PID_FILE=${deployDir}/smbox.pid; " +
 		"if [ -f \"\$PID_FILE\" ]; then " +
@@ -92,6 +94,7 @@ tasks.register('stopApp', Exec) {
 }
 
 tasks.register('startApp', Exec) {
+	dependsOn 'stopApp'
 	workingDir deployDir
 	commandLine 'bash', '-c',
 		"nohup java -jar ${deployDir}/smbox.jar > ${deployDir}/smbox.log 2>&1 & " +
@@ -100,6 +103,5 @@ tasks.register('startApp', Exec) {
 }
 
 tasks.register('deploy') {
-	dependsOn bootJar
-	finalizedBy 'copyFiles', 'copyHelp', 'copyRun', 'makeExecutable', 'stopApp', 'startApp'
+	dependsOn 'startApp'
 }
