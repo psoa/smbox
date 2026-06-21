@@ -37,9 +37,11 @@ bootJar {
 	archiveFileName = "smbox-${version}.jar"
 }
 
+def deployDir = "${System.getenv('HOME')}/apps/smbox"
+
 tasks.register('copyFiles', Copy) {
 	from bootJar
-	into "${System.getenv('HOME')}/smbox"
+	into deployDir
 	rename { String fileName ->
 		fileName.replace("smbox-${version}.jar", "smbox.jar")
 	}
@@ -62,20 +64,42 @@ task copyFrontend(type: Copy) {
 
 tasks.register('copyHelp', Copy) {
 	from 'HELP.md'
-	into "${System.getenv('HOME')}/smbox"
+	into deployDir
 }
 
 tasks.register('copyRun', Copy) {
 	from 'run.sh'
-	into "${System.getenv('HOME')}/smbox"
+	into deployDir
 }
 
 tasks.register('makeExecutable', Exec) {
-	commandLine 'chmod', '+x', "${System.getenv('HOME')}/smbox/run.sh"
+	commandLine 'chmod', '+x', "${deployDir}/run.sh"
 }
 
+tasks.register('stopApp', Exec) {
+	commandLine 'bash', '-c',
+		"PID_FILE=${deployDir}/smbox.pid; " +
+		"if [ -f \"\$PID_FILE\" ]; then " +
+		"  PID=\$(cat \"\$PID_FILE\"); " +
+		"  if kill -0 \"\$PID\" 2>/dev/null; then " +
+		"    echo \"Stopping smbox (PID \$PID)...\"; " +
+		"    kill \"\$PID\" && sleep 2; " +
+		"  fi; " +
+		"  rm -f \"\$PID_FILE\"; " +
+		"else " +
+		"  echo 'smbox is not running.'; " +
+		"fi"
+}
 
-tasks.register('buildAndCopy') {
+tasks.register('startApp', Exec) {
+	workingDir deployDir
+	commandLine 'bash', '-c',
+		"nohup java -jar ${deployDir}/smbox.jar > ${deployDir}/smbox.log 2>&1 & " +
+		"echo \$! > ${deployDir}/smbox.pid; " +
+		"echo \"smbox started (PID \$(cat ${deployDir}/smbox.pid))\""
+}
+
+tasks.register('deploy') {
 	dependsOn bootJar
-	finalizedBy 'copyFiles', 'copyHelp', 'copyRun', 'makeExecutable'
+	finalizedBy 'copyFiles', 'copyHelp', 'copyRun', 'makeExecutable', 'stopApp', 'startApp'
 }
