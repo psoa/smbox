@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::content}, 'Categories - Brainstorm')}">
+<body>
+<div th:fragment="content" class="scrollable">
+    <div class="posts-header">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="page-title mb-2">Categories</h1>
+                <p class="post-meta" th:text="${#lists.size(categories)} + ' ' + (${#lists.size(categories)} == 1 ? 'category' : 'categories')">0 categories</p>
+            </div>
+            <a th:href="@{/categories/add}" class="btn btn-success">
+                <i class="fas fa-plus me-2"></i>New Category
+            </a>
+        </div>
+        <div class="divider"></div>
+    </div>
+
+    <div class="posts-scroll-container">
+        <div th:if="${#lists.isEmpty(categories)}" class="empty-state">
+            <i class="fas fa-tags"></i>
+            <h3>No categories yet</h3>
+            <p>Create your first category to start organizing your posts.</p>
+            <a th:href="@{/categories/add}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Create Your First Category
+            </a>
+        </div>
+
+        <div th:if="${!#lists.isEmpty(categories)}">
+            <article class="card" th:each="category : ${categories}">
+                <div class="card-body">
+                    <h2 class="post-title">
+                        <a th:href="@{/categories/{id}(id=${category.id})}" th:text="${category.name}">Category Name</a>
+                    </h2>
+                    <div th:if="${#strings.length(category.description) > 0}" class="post-excerpt">
+                        <span th:text="${category.description}"></span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <a th:href="@{/categories/{id}(id=${category.id})}" class="text-decoration-none">
+                            View details →
+                        </a>
+                        <div>
+                            <a th:href="@{/categories/edit/{id}(id=${category.id})}" class="btn btn-sm btn-outline-secondary me-2">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </div>
+</div>
+</body>
+</html>

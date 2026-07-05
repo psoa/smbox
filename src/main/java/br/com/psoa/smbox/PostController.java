@@ -1,6 +1,8 @@
 package br.com.psoa.smbox;
 
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,10 +23,13 @@ import br.com.psoa.smbox.model.Post;
 
 @Controller
 public class PostController {
-    
+
     @Autowired
     private PostRepository postRepository;
-    
+
+    @Autowired
+    private CategoryRepository categoryRepository;
+
     @GetMapping("/")
     public String index() {
         return "redirect:/posts";
@@ -71,14 +76,16 @@ public class PostController {
         post.setSubject("Brainstorm " + formattedSubjectDate);
 
         model.addAttribute("post", post);
+        model.addAttribute("allCategories", categoryRepository.findAll());
         return "add";
     }
-    
+
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable("id") Long id, Model model) {
       Post post = postRepository.findById(id)
               .orElseThrow(() -> new IllegalArgumentException("Invalid post ID: " + id));
       model.addAttribute("post", post);
+      model.addAttribute("allCategories", categoryRepository.findAll());
       return "edit";
     }
 
@@ -91,19 +98,25 @@ public class PostController {
 
 
     @PostMapping("/add")
-    public String addPost(@ModelAttribute("post") Post post, BindingResult result) {
+    public String addPost(@ModelAttribute("post") Post post, BindingResult result,
+            @RequestParam(required = false) List<Long> categoryIds) {
       if (result.hasErrors()) {
         return "add";
       }
+      post.setCategories(new HashSet<>(categoryRepository.findAllById(
+              categoryIds != null ? categoryIds : Collections.emptyList())));
       postRepository.save(post);
       return "redirect:/posts";
     }
 
     @PostMapping("/edit")
-    public String editPost(@ModelAttribute("post") Post post, BindingResult result) {
+    public String editPost(@ModelAttribute("post") Post post, BindingResult result,
+            @RequestParam(required = false) List<Long> categoryIds) {
       if (result.hasErrors()) {
         return "edit";
       }
+      post.setCategories(new HashSet<>(categoryRepository.findAllById(
+              categoryIds != null ? categoryIds : Collections.emptyList())));
       postRepository.save(post);
       return "redirect:/posts";
     }

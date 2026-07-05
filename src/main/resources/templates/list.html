@@ -72,6 +72,9 @@
                     <div th:if="${#strings.length(post.content) > 0}" class="post-excerpt">
                         <span th:text="${#strings.length(post.content) > 200 ? #strings.substring(post.content, 0, 200) + '...' : post.content}"></span>
                     </div>
+                    <div th:if="${!#sets.isEmpty(post.categories)}" class="mb-3">
+                        <span class="badge bg-secondary me-1" th:each="category : ${post.categories}" th:text="${category.name}">Category</span>
+                    </div>
                     <div class="d-flex justify-content-between align-items-center mt-3">
                         <a th:href="@{/{id}(id=${post.id})}" class="text-decoration-none">
                             Read more →

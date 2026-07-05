@@ -9,6 +9,9 @@
                 <i class="far fa-calendar me-1"></i>
                 <span th:text="${#temporals.format(#temporals.createDate(#strings.substring(post.date, 0, 4) + '-' + #strings.substring(post.date, 5, 7) + '-' + #strings.substring(post.date, 8, 10)), 'MMMM d, yyyy')}">Date</span>
             </div>
+            <div th:if="${!#sets.isEmpty(post.categories)}">
+                <span class="badge bg-secondary me-1" th:each="category : ${post.categories}" th:text="${category.name}">Category</span>
+            </div>
         </header>
 
         <div class="divider"></div>

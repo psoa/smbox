@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::content}, 'Show Category')}">
+<body>
+<div th:fragment="content">
+    <article>
+        <header class="mb-4">
+            <h1 class="page-title text-start" th:text="${category.name}">Category Name</h1>
+        </header>
+
+        <div class="divider"></div>
+
+        <div class="post-content mb-5" th:text="${category.description}">
+            Category description will appear here...
+        </div>
+
+        <div class="divider"></div>
+
+        <footer class="d-flex justify-content-between align-items-center pt-3">
+            <a th:href="@{/categories}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to categories
+            </a>
+            <div>
+                <a th:href="@{/categories/edit/{id}(id=${category.id})}" class="btn btn-outline-secondary me-2">
+                    <i class="fas fa-edit me-1"></i>Edit
+                </a>
+                <a th:href="@{/categories/delete/{id}(id=${category.id})}" class="btn btn-outline-danger"
+                   onclick="return confirm('Are you sure you want to delete this category?')">
+                    <i class="fas fa-trash me-1"></i>Delete
+                </a>
+            </div>
+        </footer>
+    </article>
+</div>
+</body>
+</html>

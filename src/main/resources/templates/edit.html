@@ -20,8 +20,18 @@
 
         <div class="mb-4">
             <label for="content" class="form-label">Content</label>
-            <textarea class="form-control content-textarea" id="content" th:field="*{content}" rows="15" 
+            <textarea class="form-control content-textarea" id="content" th:field="*{content}" rows="15"
                       placeholder="Write your thoughts here..." required></textarea>
+        </div>
+
+        <div class="mb-4" th:if="${!#lists.isEmpty(allCategories)}">
+            <label class="form-label">Categories</label>
+            <div class="form-check" th:each="category : ${allCategories}">
+                <input class="form-check-input" type="checkbox" name="categoryIds" title="Category"
+                    th:id="${'category-' + category.id}" th:value="${category.id}" th:title="${category.name}"
+                    th:checked="${post.categories.contains(category)}">
+                <label class="form-check-label" th:for="${'category-' + category.id}" th:text="${category.name}">Category</label>
+            </div>
         </div>
 
         <div class="divider"></div>
