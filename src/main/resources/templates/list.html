@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::content}, 'All Posts - Brainstorm')}">
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::content}, #{post.list.page.title})}">
 <body>
 <div th:fragment="content">
     <div class="mb-6 flex items-center justify-between">
         <div>
-            <h1 class="font-serif text-4xl font-bold tracking-tight text-gray-900">All Posts</h1>
-            <p class="mt-1 text-sm font-medium text-gray-500" th:text="${#lists.size(posts)} + ' ' + (${#lists.size(posts)} == 1 ? 'post' : 'posts')">0 posts</p>
+            <h1 class="font-serif text-4xl font-bold tracking-tight text-gray-900" th:text="#{post.list.heading}">All Posts</h1>
+            <p class="mt-1 text-sm font-medium text-gray-500" th:text="${#lists.size(posts)} + ' ' + (${#lists.size(posts)} == 1 ? #{post.count.singular} : #{post.count.plural})">0 posts</p>
         </div>
         <a th:href="@{/add}" class="inline-flex items-center gap-2 rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-500">
-            <i class="fas fa-plus"></i>Write
+            <i class="fas fa-plus"></i><span th:text="#{post.write}">Write</span>
         </a>
     </div>
 
@@ -20,7 +20,7 @@
             <input
                 type="text"
                 name="search"
-                placeholder="Search by title, content, or date (YYYY-MM-DD)..."
+                th:placeholder="#{post.search.placeholder}"
                 th:value="${search}"
                 autocomplete="off"
                 class="block w-full rounded-md border border-gray-300 py-2.5 pl-10 pr-24 text-sm placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
@@ -35,17 +35,21 @@
     </form>
 
     <div th:if="${selectedCategory != null}" class="mb-4 text-sm text-gray-500">
-        Filtering by category
+        <span th:text="#{post.filter.by.category}">Filtering by category</span>
         <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700"
               th:each="category : ${sidebarCategories}" th:if="${category.id.equals(selectedCategory)}" th:text="${category.name}">Category</span>
     </div>
 
     <div th:if="${search != null && search != ''}" class="mb-4 text-sm text-gray-500">
         <span th:if="${#lists.size(posts) > 0}">
-            Found <strong class="font-semibold text-gray-700" th:text="${#lists.size(posts)}">0</strong> result(s) for "<strong class="font-semibold text-gray-700" th:text="${search}"></strong>"
+            <span th:text="#{post.search.found}">Found</span>
+            <strong class="font-semibold text-gray-700" th:text="${#lists.size(posts)}">0</strong>
+            <span th:text="#{post.search.results.for}">result(s) for</span>
+            &ldquo;<strong class="font-semibold text-gray-700" th:text="${search}"></strong>&rdquo;
         </span>
         <span th:if="${#lists.isEmpty(posts)}">
-            No results found for "<strong class="font-semibold text-gray-700" th:text="${search}"></strong>"
+            <span th:text="#{post.search.no.results}">No results found for</span>
+            &ldquo;<strong class="font-semibold text-gray-700" th:text="${search}"></strong>&rdquo;
         </span>
     </div>
 
@@ -53,17 +57,20 @@
 
     <div th:if="${#lists.isEmpty(posts) && (search == null || search == '') && selectedCategory == null}" class="py-16 text-center">
         <i class="fas fa-feather-alt mb-4 text-5xl text-gray-300"></i>
-        <h3 class="mb-2 font-serif text-lg font-semibold text-gray-500">No posts yet</h3>
-        <p class="mb-6 text-gray-500">Start writing your first post to begin your journey.</p>
+        <h3 class="mb-2 font-serif text-lg font-semibold text-gray-500" th:text="#{post.empty.title}">No posts yet</h3>
+        <p class="mb-6 text-gray-500" th:text="#{post.empty.message}">Start writing your first post to begin your journey.</p>
         <a th:href="@{/add}" class="inline-flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-indigo-500">
-            <i class="fas fa-plus"></i>Create Your First Post
+            <i class="fas fa-plus"></i><span th:text="#{post.empty.cta}">Create Your First Post</span>
         </a>
     </div>
 
     <div th:if="${#lists.isEmpty(posts) && ((search != null && search != '') || selectedCategory != null)}" class="py-16 text-center">
         <i class="fas fa-search mb-4 text-5xl text-gray-300"></i>
-        <h3 class="mb-2 font-serif text-lg font-semibold text-gray-500">No matches found</h3>
-        <p class="text-gray-500">Try adjusting your search terms or <a href="/posts" class="font-medium text-indigo-600 hover:text-indigo-500">view all posts</a>.</p>
+        <h3 class="mb-2 font-serif text-lg font-semibold text-gray-500" th:text="#{post.no.matches.title}">No matches found</h3>
+        <p class="text-gray-500">
+            <span th:text="#{post.no.matches.message}">Try adjusting your search terms or</span>
+            <a href="/posts" class="font-medium text-indigo-600 hover:text-indigo-500" th:text="#{post.no.matches.view.all}">view all posts</a>.
+        </p>
     </div>
 
     <div th:if="${!#lists.isEmpty(posts)}" class="space-y-4">
@@ -73,7 +80,7 @@
             </h2>
             <div class="mt-1 flex items-center gap-1.5 text-sm text-gray-500">
                 <i class="far fa-calendar"></i>
-                <span th:text="${#temporals.format(#temporals.createDate(#strings.substring(post.date, 0, 4) + '-' + #strings.substring(post.date, 5, 7) + '-' + #strings.substring(post.date, 8, 10)), 'MMMM d, yyyy')}">Date</span>
+                <span th:text="${#temporals.format(#temporals.createDate(#strings.substring(post.date, 0, 4) + '-' + #strings.substring(post.date, 5, 7) + '-' + #strings.substring(post.date, 8, 10)), #{date.format})}">Date</span>
             </div>
             <div th:if="${#strings.length(post.content) > 0}" class="mt-3 text-sm leading-relaxed text-gray-600">
                 <span th:text="${#strings.length(post.content) > 200 ? #strings.substring(post.content, 0, 200) + '...' : post.content}"></span>
@@ -82,11 +89,11 @@
                 <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700" th:each="category : ${post.categories}" th:text="${category.name}">Category</span>
             </div>
             <div class="mt-4 flex items-center justify-between">
-                <a th:href="@{/{id}(id=${post.id})}" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                <a th:href="@{/{id}(id=${post.id})}" class="text-sm font-medium text-indigo-600 hover:text-indigo-500" th:text="#{action.read.more}">
                     Read more &rarr;
                 </a>
                 <a th:href="@{/edit/{id}(id=${post.id})}" class="inline-flex items-center gap-1.5 rounded-md border border-gray-300 px-2.5 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50">
-                    <i class="fas fa-edit"></i>Edit
+                    <i class="fas fa-edit"></i><span th:text="#{action.edit}">Edit</span>
                 </a>
             </div>
         </article>

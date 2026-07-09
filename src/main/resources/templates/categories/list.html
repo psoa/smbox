@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::content}, 'Categories - Brainstorm')}">
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::content}, #{category.list.page.title})}">
 <body>
 <div th:fragment="content">
     <div class="mb-6 flex items-center justify-between">
         <div>
-            <h1 class="font-serif text-4xl font-bold tracking-tight text-gray-900">Categories</h1>
-            <p class="mt-1 text-sm font-medium text-gray-500" th:text="${#lists.size(categories)} + ' ' + (${#lists.size(categories)} == 1 ? 'category' : 'categories')">0 categories</p>
+            <h1 class="font-serif text-4xl font-bold tracking-tight text-gray-900" th:text="#{category.list.heading}">Categories</h1>
+            <p class="mt-1 text-sm font-medium text-gray-500" th:text="${#lists.size(categories)} + ' ' + (${#lists.size(categories)} == 1 ? #{category.count.singular} : #{category.count.plural})">0 categories</p>
         </div>
         <a th:href="@{/categories/add}" class="inline-flex items-center gap-2 rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-500">
-            <i class="fas fa-plus"></i>New Category
+            <i class="fas fa-plus"></i><span th:text="#{category.new}">New Category</span>
         </a>
     </div>
 
@@ -16,10 +16,10 @@
 
     <div th:if="${#lists.isEmpty(categories)}" class="py-16 text-center">
         <i class="fas fa-tags mb-4 text-5xl text-gray-300"></i>
-        <h3 class="mb-2 font-serif text-lg font-semibold text-gray-500">No categories yet</h3>
-        <p class="mb-6 text-gray-500">Create your first category to start organizing your posts.</p>
+        <h3 class="mb-2 font-serif text-lg font-semibold text-gray-500" th:text="#{category.empty.title}">No categories yet</h3>
+        <p class="mb-6 text-gray-500" th:text="#{category.empty.message}">Create your first category to start organizing your posts.</p>
         <a th:href="@{/categories/add}" class="inline-flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-indigo-500">
-            <i class="fas fa-plus"></i>Create Your First Category
+            <i class="fas fa-plus"></i><span th:text="#{category.empty.cta}">Create Your First Category</span>
         </a>
     </div>
 
@@ -32,11 +32,11 @@
                 <span th:text="${category.description}"></span>
             </div>
             <div class="mt-4 flex items-center justify-between">
-                <a th:href="@{/categories/{id}(id=${category.id})}" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                <a th:href="@{/categories/{id}(id=${category.id})}" class="text-sm font-medium text-indigo-600 hover:text-indigo-500" th:text="#{action.view.details}">
                     View details &rarr;
                 </a>
                 <a th:href="@{/categories/edit/{id}(id=${category.id})}" class="inline-flex items-center gap-1.5 rounded-md border border-gray-300 px-2.5 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50">
-                    <i class="fas fa-edit"></i>Edit
+                    <i class="fas fa-edit"></i><span th:text="#{action.edit}">Edit</span>
                 </a>
             </div>
         </article>
