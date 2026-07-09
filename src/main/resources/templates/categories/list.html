@@ -5,7 +5,11 @@
     <div class="mb-6 flex items-center justify-between">
         <div>
             <h1 class="font-serif text-4xl font-bold tracking-tight text-gray-900" th:text="#{category.list.heading}">Categories</h1>
-            <p class="mt-1 text-sm font-medium text-gray-500" th:text="${#lists.size(categories)} + ' ' + (${#lists.size(categories)} == 1 ? #{category.count.singular} : #{category.count.plural})">0 categories</p>
+            <p class="mt-1 text-sm font-medium text-gray-500">
+                <span th:text="${#lists.size(categories)}">0</span>
+                <span th:if="${#lists.size(categories) == 1}" th:text="#{category.count.singular}">category</span>
+                <span th:if="${#lists.size(categories) != 1}" th:text="#{category.count.plural}">categories</span>
+            </p>
         </div>
         <a th:href="@{/categories/add}" class="inline-flex items-center gap-2 rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-500">
             <i class="fas fa-plus"></i><span th:text="#{category.new}">New Category</span>

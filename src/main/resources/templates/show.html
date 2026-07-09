@@ -7,7 +7,7 @@
             <h1 class="font-serif text-3xl font-bold tracking-tight text-gray-900" th:text="${post.subject}">Post Subject</h1>
             <div class="mt-2 flex items-center gap-1.5 text-sm text-gray-500">
                 <i class="far fa-calendar"></i>
-                <span th:text="${#temporals.format(#temporals.createDate(#strings.substring(post.date, 0, 4) + '-' + #strings.substring(post.date, 5, 7) + '-' + #strings.substring(post.date, 8, 10)), __#{date.format}__)}">Date</span>
+                <span th:text="${@localizedDateFormatter.formatIsoDate(post.date, #locale)}">Date</span>
             </div>
             <div th:if="${!#sets.isEmpty(post.categories)}" class="mt-3 flex flex-wrap gap-1">
                 <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700" th:each="category : ${post.categories}" th:text="${category.name}">Category</span>
@@ -30,7 +30,7 @@
                 <a th:href="@{/edit/{id}(id=${post.id})}" class="inline-flex items-center gap-1.5 rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50">
                     <i class="fas fa-edit"></i><span th:text="#{action.edit}">Edit</span>
                 </a>
-                <a th:href="@{/delete/{id}(id=${post.id})}" th:onclick="'return confirm(\'' + #{post.delete.confirm} + '\')'"
+                <a th:href="@{/delete/{id}(id=${post.id})}" th:attr="onclick=|return confirm('${#messages.msg('post.delete.confirm')}')|"
                    class="inline-flex items-center gap-1.5 rounded-md border border-red-200 px-4 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50">
                     <i class="fas fa-trash"></i><span th:text="#{action.delete}">Delete</span>
                 </a>
