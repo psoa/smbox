@@ -14,4 +14,4 @@ fi
 
 nohup java -jar "$SCRIPT_DIR/smbox.jar" > "$SCRIPT_DIR/smbox.log" 2>&1 &
 echo $! > "$PID_FILE"
-echo "smbox started (PID $(cat "$PID_FILE"))"
+echo "smbox started (PID $(cat "$PID_FILE") )"

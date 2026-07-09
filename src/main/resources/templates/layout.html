@@ -4,476 +4,74 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${pageTitle} ?: 'Smbox - Brainstorm'">Smbox</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'ui-sans-serif', 'system-ui'],
+                        serif: ['Merriweather', 'ui-serif', 'Georgia'],
+                    },
+                }
+            }
+        }
+    </script>
     <style>
-        :root {
-            --primary-color: #1a1a1a;
-            --secondary-color: #6b6b6b;
-            --accent-color: #0066cc;
-            --border-color: #e6e6e6;
-            --bg-color: #ffffff;
-            --hover-bg: #f8f9fa;
-            --shadow: 0 1px 3px rgba(0,0,0,0.08);
-            --shadow-hover: 0 4px 12px rgba(0,0,0,0.12);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #fafafa;
-            color: var(--primary-color);
-            line-height: 1.6;
-            padding-top: 70px;
-            padding-bottom: 60px;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        /* Navigation */
-        .navbar {
-            background: var(--bg-color);
-            border-bottom: 1px solid var(--border-color);
-            box-shadow: var(--shadow);
-            padding: 1rem 0;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-        }
-
-        .navbar-brand {
-            font-family: 'Merriweather', serif;
-            font-weight: 700;
-            color: var(--primary-color) !important;
-            font-size: 1.5rem;
-            letter-spacing: -0.5px;
-        }
-
-        .nav-link {
-            color: var(--secondary-color) !important;
-            font-weight: 500;
-            font-size: 0.95rem;
-            transition: color 0.2s ease;
-        }
-
-        .nav-link:hover {
-            color: var(--primary-color) !important;
-        }
-
-        /* Main Container */
-        .main-container {
-            background: var(--bg-color);
-            max-width: 740px;
-            margin: 2rem auto;
-            padding: 3rem 2rem;
-            flex: 1;
-        }
-
-        .main-container.scrollable {
-            display: flex;
-            flex-direction: column;
-            height: calc(100vh - 190px);
-            overflow: hidden;
-            margin: 0 auto;
-            padding: 2rem 2rem 0 2rem;
-        }
-
-        .posts-header {
-            flex-shrink: 0;
-            padding-bottom: 1rem;
-        }
-
-        .posts-scroll-container {
-            flex: 1;
-            overflow-y: auto;
-            overflow-x: hidden;
-            padding-right: 0.5rem;
-        }
-
-        .posts-scroll-container::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .posts-scroll-container::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 4px;
-        }
-
-        .posts-scroll-container::-webkit-scrollbar-thumb {
-            background: #c0c0c0;
-            border-radius: 4px;
-        }
-
-        .posts-scroll-container::-webkit-scrollbar-thumb:hover {
-            background: #a0a0a0;
-        }
-
-        /* Buttons */
-        .btn {
-            font-weight: 500;
-            border-radius: 6px;
-            padding: 0.5rem 1.25rem;
-            font-size: 0.95rem;
-            transition: all 0.2s ease;
-            border: none;
-        }
-
-        .btn-primary {
-            background: var(--accent-color);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #0052a3;
-            transform: translateY(-1px);
-        }
-
-        .btn-success {
-            background: #2ecc71;
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #27ae60;
-            transform: translateY(-1px);
-        }
-
-        .btn-outline-secondary {
-            border: 1px solid var(--border-color);
-            color: var(--secondary-color);
-            background: transparent;
-        }
-
-        .btn-outline-secondary:hover {
-            background: var(--hover-bg);
-            border-color: var(--secondary-color);
-            color: var(--primary-color);
-        }
-
-        .btn-outline-danger {
-            border: 1px solid #e74c3c;
-            color: #e74c3c;
-            background: transparent;
-        }
-
-        .btn-outline-danger:hover {
-            background: #e74c3c;
-            color: white;
-        }
-
-        /* Cards */
-        .card {
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            box-shadow: none;
-            transition: all 0.2s ease;
-            margin-bottom: 1.5rem;
-            overflow: hidden;
-        }
-
-        .card:hover {
-            box-shadow: var(--shadow-hover);
-            border-color: #d0d0d0;
-        }
-
-        .card-header {
-            background: transparent;
-            border-bottom: 1px solid var(--border-color);
-            padding: 1.5rem;
-        }
-
-        .card-body {
-            padding: 1.5rem;
-        }
-
-        .card-footer {
-            background: var(--hover-bg);
-            border-top: 1px solid var(--border-color);
-            padding: 1rem 1.5rem;
-        }
-
-        /* Forms */
-        .form-control, .form-select {
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 0.65rem 0.875rem;
-            font-size: 0.95rem;
-            transition: border-color 0.2s ease;
-        }
-
-        .form-control:focus, .form-select:focus {
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
-        }
-
-        .content-textarea {
-            font-family: 'Merriweather', serif;
-            font-size: 1.125rem;
-            line-height: 1.8;
-        }
-
-        .form-label {
-            font-weight: 600;
-            color: var(--primary-color);
-            margin-bottom: 0.5rem;
-        }
-
-        /* Search Bar */
-        .search-bar {
-            position: relative;
-            margin-bottom: 2rem;
-        }
-
-        .search-bar input {
-            padding-left: 2.75rem;
-            padding-right: 8rem;
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--secondary-color);
-            pointer-events: none;
-        }
-
-        .search-button {
-            position: absolute;
-            right: 3.5rem;
-            top: 50%;
-            transform: translateY(-50%);
-            padding: 0.4rem 1rem;
-            font-size: 0.875rem;
-            /* keep the search button visually stable on hover (avoid the general .btn hover translate) */
-            transition: background-color 0.15s ease, color 0.15s ease;
-        }
-
-        .search-button:hover,
-        .search-button:focus {
-            /* override the generic .btn hover transform so the button doesn't shift position */
-            transform: translateY(-50%);
-            box-shadow: none;
-        }
-
-        .clear-search {
-            position: absolute;
-            right: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: var(--secondary-color);
-            cursor: pointer;
-            padding: 0.25rem;
-            line-height: 1;
-            transition: color 0.2s ease;
-        }
-
-        .clear-search:hover {
-            color: var(--primary-color);
-        }
-
-        .search-results-text {
-            color: var(--secondary-color);
-            font-size: 0.875rem;
-            margin-bottom: 1rem;
-        }
-
-        /* Typography */
-        .page-title {
-            font-family: 'Merriweather', serif;
-            font-weight: 700;
-            font-size: 2.5rem;
-            color: var(--primary-color);
-            margin-bottom: 0.5rem;
-            letter-spacing: -1px;
-            line-height: 1.2;
-        }
-
-        h1, h2, h3, h4, h5, h6 {
-            font-family: 'Merriweather', serif;
-            font-weight: 600;
-            line-height: 1.3;
-        }
-
-        .post-title {
-            font-family: 'Merriweather', serif;
-            font-weight: 700;
-            font-size: 1.5rem;
-            color: var(--primary-color);
-            margin-bottom: 0.5rem;
-            line-height: 1.3;
-            letter-spacing: -0.5px;
-        }
-
-        .post-title a {
-            color: inherit;
-            text-decoration: none;
-            transition: color 0.2s ease;
-        }
-
-        .post-title a:hover {
-            color: var(--accent-color);
-        }
-
-        .post-excerpt {
-            color: var(--secondary-color);
-            font-size: 1rem;
-            line-height: 1.6;
-            margin-bottom: 1rem;
-        }
-
-        .post-meta {
-            color: var(--secondary-color);
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-
-        .post-date {
-            color: var(--secondary-color);
-            font-size: 0.875rem;
-        }
-
-        .post-content {
-            font-family: 'Merriweather', serif;
-            font-size: 1.125rem;
-            line-height: 1.8;
-            color: #292929;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-
-        /* Badges */
-        .badge {
-            font-weight: 500;
-            padding: 0.375rem 0.75rem;
-            border-radius: 4px;
-            font-size: 0.875rem;
-        }
-
-        /* Dividers */
-        .divider {
-            border-top: 1px solid var(--border-color);
-            margin: 2rem 0;
-        }
-
-        /* Footer */
-        .footer {
-            background: var(--bg-color);
-            border-top: 1px solid var(--border-color);
-            text-align: center;
-            padding: 2rem 0;
-            color: var(--secondary-color);
-            font-size: 0.875rem;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            z-index: 999;
-        }
-
-        /* Animations */
-        .animate-fade-in {
-            animation: fadeIn 0.3s ease-in;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Empty state */
-        .empty-state {
-            text-align: center;
-            padding: 4rem 2rem;
-        }
-
-        .empty-state i {
-            font-size: 3rem;
-            color: #d0d0d0;
-            margin-bottom: 1rem;
-        }
-
-        .empty-state h3 {
-            font-family: 'Merriweather', serif;
-            color: var(--secondary-color);
-            margin-bottom: 0.5rem;
-        }
-
-        .empty-state p {
-            color: var(--secondary-color);
-            margin-bottom: 1.5rem;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .main-container {
-                padding: 2rem 1.5rem;
-                margin: 1rem;
-            }
-            
-            .page-title {
-                font-size: 2rem;
-            }
-            
-            .post-title {
-                font-size: 1.25rem;
-            }
-        }
+        .prose-content { white-space: pre-wrap; word-wrap: break-word; }
     </style>
 </head>
-<body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
-        <div class="container">
-            <a class="navbar-brand" href="/posts">
-                <i class="fas fa-book-open me-2"></i>Smbox
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-expanded="false" aria-controls="navbarNav" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/posts">All Posts</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/add">New Post</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/categories">Categories</a>
-                    </li>
-                </ul>
+<body class="min-h-screen bg-gray-50 font-sans text-gray-900 antialiased">
+    <div class="md:flex">
+        <!-- Sidebar -->
+        <aside class="w-full border-b border-gray-200 bg-white md:fixed md:inset-y-0 md:flex md:w-64 md:flex-col md:border-b-0 md:border-r">
+            <div class="flex items-center gap-2 border-b border-gray-200 px-6 py-5">
+                <i class="fas fa-book-open text-indigo-600"></i>
+                <a th:href="@{/posts}" class="font-serif text-lg font-bold tracking-tight text-gray-900">Smbox</a>
             </div>
-        </div>
-    </nav>
+            <nav class="flex-1 overflow-y-auto px-4 py-6 md:space-y-8">
+                <div>
+                    <h3 class="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-gray-400">Categories</h3>
+                    <ul class="space-y-1">
+                        <li th:each="category : ${sidebarCategories}">
+                            <a th:href="@{/posts(category=${category.id})}" th:text="${category.name}"
+                               class="block truncate rounded-md px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                               th:classappend="${selectedCategory != null and selectedCategory.equals(category.id)} ? 'bg-indigo-600 text-white hover:bg-indigo-600 hover:text-white font-medium' : ''">Category</a>
+                        </li>
+                    </ul>
+                    <p th:if="${#lists.isEmpty(sidebarCategories)}" class="px-3 text-sm text-gray-400">No categories yet.</p>
+                </div>
+                <div class="mt-6 border-t border-gray-100 pt-6 md:mt-0 md:border-t-0 md:pt-0">
+                    <h3 class="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-gray-400">Add New</h3>
+                    <ul class="space-y-1">
+                        <li>
+                            <a th:href="@{/add}" class="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900">
+                                <i class="fas fa-plus w-3.5 text-xs"></i>Add a new post
+                            </a>
+                        </li>
+                        <li>
+                            <a th:href="@{/categories/add}" class="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900">
+                                <i class="fas fa-plus w-3.5 text-xs"></i>Add a new category
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </aside>
 
-    <!-- Main Content -->
-    <div class="container">
-        <div class="main-container animate-fade-in">
-            <div th:replace="${content}">Content goes here</div>
+        <!-- Main Content -->
+        <div class="flex min-h-screen flex-1 flex-col md:pl-64">
+            <main class="mx-auto w-full max-w-3xl flex-1 px-4 py-10 sm:px-6 lg:px-8">
+                <div th:replace="${content}">Content goes here</div>
+            </main>
+            <footer class="border-t border-gray-200 bg-white py-6 text-center text-sm text-gray-400">
+                Smbox &mdash; A place for your thoughts
+            </footer>
         </div>
     </div>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <p class="mb-0">Smbox &mdash; A place for your thoughts</p>
-        </div>
-    </footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

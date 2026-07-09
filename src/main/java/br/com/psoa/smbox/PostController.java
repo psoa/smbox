@@ -36,21 +36,21 @@ public class PostController {
     }    
 
     @GetMapping("/posts")
-    public String getAllPosts(Model model, @RequestParam(required = false) String search) {
-        List<Post> posts;
-        if (search != null && !search.trim().isEmpty()) {
-            posts = postRepository.findAll(Sort.by("date").descending()).stream()
-                .filter(post -> 
-                    post.getSubject().toLowerCase().contains(search.toLowerCase()) ||
-                    post.getContent().toLowerCase().contains(search.toLowerCase()) ||
-                    post.getDate().contains(search)
-                )
-                .toList();
-        } else {
-            posts = postRepository.findAll(Sort.by("date").descending());
-        }
+    public String getAllPosts(Model model, @RequestParam(required = false) String search,
+            @RequestParam(required = false) Long category) {
+        List<Post> posts = postRepository.findAll(Sort.by("date").descending()).stream()
+            .filter(post -> search == null || search.trim().isEmpty() ||
+                post.getSubject().toLowerCase().contains(search.toLowerCase()) ||
+                post.getContent().toLowerCase().contains(search.toLowerCase()) ||
+                post.getDate().contains(search)
+            )
+            .filter(post -> category == null ||
+                post.getCategories().stream().anyMatch(c -> c.getId().equals(category))
+            )
+            .toList();
         model.addAttribute("posts", posts);
         model.addAttribute("search", search != null ? search : "");
+        model.addAttribute("selectedCategory", category);
         return "list";
     }
   

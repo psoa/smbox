@@ -39,16 +39,19 @@ DB URL is hardcoded in `application.properties` as `jdbc:sqlite:${HOME}/smbox/da
 - `PostController` — all HTTP routes (`/posts`, `/add`, `/{id}`, `/edit/{id}`, `/delete/{id}`). Search is via `?search=` and filtered **in memory** (Java Streams on full result set), not via SQL.
 - `Post` (JPA entity) — fields: `id` (Long, auto), `date` (String `yyyy-MM-dd`), `subject`, `content` (TEXT).
 - `PostRepository` — `@RepositoryRestResource` auto-exposes REST API at `/api/` with HAL links.
-- Thymeleaf templates in `src/main/resources/templates/` use a shared `layout.html` fragment for navbar/footer/CSS.
+- Thymeleaf templates in `src/main/resources/templates/` use a shared `layout.html` fragment (fixed left sidebar + main content + footer).
+- `CategoryController`/`CategoryRepository`/`Category` follow the same pattern as `Post`, at `/categories`. Posts and categories are many-to-many (`post_category` join table, owning side on `Post`).
+- `GlobalModelAttributes` (`@ControllerAdvice`) injects `sidebarCategories` into every page's model so the sidebar can render on all routes.
 
 **Known type inconsistency**: `PostRepository` extends `JpaRepository<Post, Integer>` but controller uses `Long` IDs. Spring's coercion makes it work, but the generic should ideally be `Long`.
 
 ## UI conventions
 
-- Bootstrap 5.3.0 + FontAwesome 6.0.0 + Google Fonts (Inter, Merriweather) — all via CDN.
-- CSS variables defined in `layout.html` `<style>` block (`--primary-color`, `--accent-color`, etc.).
-- Fixed navbar (70px), fixed footer (60px), max-width 740px reading layout.
-- Responsive breakpoint at 768px.
+- Tailwind CSS (Play CDN, `cdn.tailwindcss.com`) + FontAwesome 6.0.0 + Google Fonts (Inter, Merriweather) — all via CDN, no build step.
+- `tailwind.config` (inline script in `layout.html`) maps `font-sans` → Inter, `font-serif` → Merriweather.
+- Layout is a fixed-width (`w-64`) left sidebar (categories + "Add New" links) with `md:pl-64` main content, max-width `3xl`, centered. Sidebar stacks above content below the `md` breakpoint.
+- No top navbar — all navigation lives in the sidebar.
+- Accent color is Tailwind `indigo-600`; success actions (publish/save) use `emerald-600`; destructive actions use `red-600` outline style.
 
 ## Patterns
 

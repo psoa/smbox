@@ -1,98 +1,101 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::content}, 'All Posts - Brainstorm')}">
 <body>
-<div th:fragment="content" class="scrollable">
-    <div class="posts-header">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h1 class="page-title mb-2">All Posts</h1>
-                <p class="post-meta" th:text="${#lists.size(posts)} + ' ' + (${#lists.size(posts)} == 1 ? 'post' : 'posts')">0 posts</p>
-            </div>
-            <a th:href="@{/add}" class="btn btn-success">
-                <i class="fas fa-plus me-2"></i>Write
-            </a>
+<div th:fragment="content">
+    <div class="mb-6 flex items-center justify-between">
+        <div>
+            <h1 class="font-serif text-4xl font-bold tracking-tight text-gray-900">All Posts</h1>
+            <p class="mt-1 text-sm font-medium text-gray-500" th:text="${#lists.size(posts)} + ' ' + (${#lists.size(posts)} == 1 ? 'post' : 'posts')">0 posts</p>
         </div>
+        <a th:href="@{/add}" class="inline-flex items-center gap-2 rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-500">
+            <i class="fas fa-plus"></i>Write
+        </a>
+    </div>
 
-        <!-- Search Bar -->
-        <form method="get" action="/posts" class="search-bar">
-            <i class="fas fa-search search-icon"></i>
-            <input 
-                type="text" 
-                name="search" 
-                class="form-control" 
-                placeholder="Search by title, content, or date (YYYY-MM-DD)..." 
+    <!-- Search Bar -->
+    <form method="get" action="/posts" class="relative mb-4">
+        <input type="hidden" name="category" th:if="${selectedCategory != null}" th:value="${selectedCategory}">
+        <div class="relative">
+            <i class="fas fa-search pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            <input
+                type="text"
+                name="search"
+                placeholder="Search by title, content, or date (YYYY-MM-DD)..."
                 th:value="${search}"
-                autocomplete="off">
-            <button type="submit" class="btn btn-primary search-button" title="Search">
-                <i class="fas fa-search"></i>
-            </button>
-            <button type="button" class="clear-search" onclick="clearSearch()" title="Clear search" th:if="${search != null && search != ''}">
+                autocomplete="off"
+                class="block w-full rounded-md border border-gray-300 py-2.5 pl-10 pr-24 text-sm placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+            <button type="button" onclick="clearSearch()" title="Clear search" th:if="${search != null && search != ''}"
+                    class="absolute right-16 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                 <i class="fas fa-times"></i>
             </button>
-        </form>
-
-        <div th:if="${search != null && search != ''}" class="search-results-text">
-            <span th:if="${#lists.size(posts) > 0}">
-                Found <strong th:text="${#lists.size(posts)}">0</strong> result(s) for "<strong th:text="${search}"></strong>"
-            </span>
-            <span th:if="${#lists.isEmpty(posts)}">
-                No results found for "<strong th:text="${search}"></strong>"
-            </span>
+            <button type="submit" class="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-indigo-500" title="Search">
+                <i class="fas fa-search"></i>
+            </button>
         </div>
+    </form>
 
-        <div class="divider"></div>
+    <div th:if="${selectedCategory != null}" class="mb-4 text-sm text-gray-500">
+        Filtering by category
+        <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700"
+              th:each="category : ${sidebarCategories}" th:if="${category.id.equals(selectedCategory)}" th:text="${category.name}">Category</span>
     </div>
 
-    <div class="posts-scroll-container">
-        <div th:if="${#lists.isEmpty(posts) && (search == null || search == '')}" class="empty-state">
-            <i class="fas fa-feather-alt"></i>
-            <h3>No posts yet</h3>
-            <p>Start writing your first post to begin your journey.</p>
-            <a th:href="@{/add}" class="btn btn-primary">
-                <i class="fas fa-plus me-2"></i>Create Your First Post
-            </a>
-        </div>
-
-        <div th:if="${#lists.isEmpty(posts) && search != null && search != ''}" class="empty-state">
-            <i class="fas fa-search"></i>
-            <h3>No matches found</h3>
-            <p>Try adjusting your search terms or <a href="/posts">view all posts</a>.</p>
-        </div>
-
-        <div th:if="${!#lists.isEmpty(posts)}">
-            <article class="card" th:each="post : ${posts}">
-                <div class="card-body">
-                    <h2 class="post-title">
-                        <a th:href="@{/{id}(id=${post.id})}" th:text="${post.subject}">Post Title</a>
-                    </h2>
-                    <div class="post-date mb-3">
-                        <i class="far fa-calendar me-1"></i>
-                        <span th:text="${#temporals.format(#temporals.createDate(#strings.substring(post.date, 0, 4) + '-' + #strings.substring(post.date, 5, 7) + '-' + #strings.substring(post.date, 8, 10)), 'MMMM d, yyyy')}">Date</span>
-                    </div>
-                    <div th:if="${#strings.length(post.content) > 0}" class="post-excerpt">
-                        <span th:text="${#strings.length(post.content) > 200 ? #strings.substring(post.content, 0, 200) + '...' : post.content}"></span>
-                    </div>
-                    <div th:if="${!#sets.isEmpty(post.categories)}" class="mb-3">
-                        <span class="badge bg-secondary me-1" th:each="category : ${post.categories}" th:text="${category.name}">Category</span>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center mt-3">
-                        <a th:href="@{/{id}(id=${post.id})}" class="text-decoration-none">
-                            Read more →
-                        </a>
-                        <div>
-                            <a th:href="@{/edit/{id}(id=${post.id})}" class="btn btn-sm btn-outline-secondary me-2">
-                                <i class="fas fa-edit"></i> Edit
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </article>
-        </div>
+    <div th:if="${search != null && search != ''}" class="mb-4 text-sm text-gray-500">
+        <span th:if="${#lists.size(posts) > 0}">
+            Found <strong class="font-semibold text-gray-700" th:text="${#lists.size(posts)}">0</strong> result(s) for "<strong class="font-semibold text-gray-700" th:text="${search}"></strong>"
+        </span>
+        <span th:if="${#lists.isEmpty(posts)}">
+            No results found for "<strong class="font-semibold text-gray-700" th:text="${search}"></strong>"
+        </span>
     </div>
 
-    <script>
+    <hr class="mb-6 border-gray-200">
+
+    <div th:if="${#lists.isEmpty(posts) && (search == null || search == '') && selectedCategory == null}" class="py-16 text-center">
+        <i class="fas fa-feather-alt mb-4 text-5xl text-gray-300"></i>
+        <h3 class="mb-2 font-serif text-lg font-semibold text-gray-500">No posts yet</h3>
+        <p class="mb-6 text-gray-500">Start writing your first post to begin your journey.</p>
+        <a th:href="@{/add}" class="inline-flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-indigo-500">
+            <i class="fas fa-plus"></i>Create Your First Post
+        </a>
+    </div>
+
+    <div th:if="${#lists.isEmpty(posts) && ((search != null && search != '') || selectedCategory != null)}" class="py-16 text-center">
+        <i class="fas fa-search mb-4 text-5xl text-gray-300"></i>
+        <h3 class="mb-2 font-serif text-lg font-semibold text-gray-500">No matches found</h3>
+        <p class="text-gray-500">Try adjusting your search terms or <a href="/posts" class="font-medium text-indigo-600 hover:text-indigo-500">view all posts</a>.</p>
+    </div>
+
+    <div th:if="${!#lists.isEmpty(posts)}" class="space-y-4">
+        <article class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition hover:shadow-md" th:each="post : ${posts}">
+            <h2 class="font-serif text-xl font-bold leading-snug text-gray-900">
+                <a th:href="@{/{id}(id=${post.id})}" th:text="${post.subject}" class="hover:text-indigo-600">Post Title</a>
+            </h2>
+            <div class="mt-1 flex items-center gap-1.5 text-sm text-gray-500">
+                <i class="far fa-calendar"></i>
+                <span th:text="${#temporals.format(#temporals.createDate(#strings.substring(post.date, 0, 4) + '-' + #strings.substring(post.date, 5, 7) + '-' + #strings.substring(post.date, 8, 10)), 'MMMM d, yyyy')}">Date</span>
+            </div>
+            <div th:if="${#strings.length(post.content) > 0}" class="mt-3 text-sm leading-relaxed text-gray-600">
+                <span th:text="${#strings.length(post.content) > 200 ? #strings.substring(post.content, 0, 200) + '...' : post.content}"></span>
+            </div>
+            <div th:if="${!#sets.isEmpty(post.categories)}" class="mt-3 flex flex-wrap gap-1">
+                <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700" th:each="category : ${post.categories}" th:text="${category.name}">Category</span>
+            </div>
+            <div class="mt-4 flex items-center justify-between">
+                <a th:href="@{/{id}(id=${post.id})}" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                    Read more &rarr;
+                </a>
+                <a th:href="@{/edit/{id}(id=${post.id})}" class="inline-flex items-center gap-1.5 rounded-md border border-gray-300 px-2.5 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50">
+                    <i class="fas fa-edit"></i>Edit
+                </a>
+            </div>
+        </article>
+    </div>
+
+    <script th:inline="javascript">
         function clearSearch() {
-            window.location.href = '/posts';
+            const category = /*[[${selectedCategory}]]*/ null;
+            window.location.href = category ? '/posts?category=' + category : '/posts';
         }
     </script>
 </div>

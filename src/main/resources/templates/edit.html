@@ -2,50 +2,54 @@
 <html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::content}, 'Edit Post')}">
 <body>
 <div th:fragment="content">
-    <h1 class="page-title text-start mb-4">Edit Post</h1>
-    
-    <form th:action="@{/edit}" th:object="${post}" method="post">
+    <h1 class="mb-6 font-serif text-3xl font-bold tracking-tight text-gray-900">Edit Post</h1>
+
+    <form th:action="@{/edit}" th:object="${post}" method="post" class="space-y-6">
         <input type="hidden" th:field="*{id}" />
-        
-        <div class="mb-4">
-            <label for="date" class="form-label">Date</label>
-            <input type="date" class="form-control" id="date" th:field="*{date}" required>
+
+        <div>
+            <label for="date" class="mb-1.5 block text-sm font-semibold text-gray-700">Date</label>
+            <input type="date" id="date" th:field="*{date}" required
+                class="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
         </div>
 
-        <div class="mb-4">
-            <label for="subject" class="form-label">Title</label>
-            <input type="text" class="form-control" id="subject" th:field="*{subject}" 
-                   placeholder="Give your post a title" required>
+        <div>
+            <label for="subject" class="mb-1.5 block text-sm font-semibold text-gray-700">Title</label>
+            <input type="text" id="subject" th:field="*{subject}" placeholder="Give your post a title" required
+                class="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
         </div>
 
-        <div class="mb-4">
-            <label for="content" class="form-label">Content</label>
-            <textarea class="form-control content-textarea" id="content" th:field="*{content}" rows="15"
-                      placeholder="Write your thoughts here..." required></textarea>
+        <div>
+            <label for="content" class="mb-1.5 block text-sm font-semibold text-gray-700">Content</label>
+            <textarea id="content" th:field="*{content}" rows="15" placeholder="Write your thoughts here..." required
+                class="block w-full rounded-md border border-gray-300 px-3 py-3 font-serif text-lg leading-relaxed focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"></textarea>
         </div>
 
-        <div class="mb-4" th:if="${!#lists.isEmpty(allCategories)}">
-            <label class="form-label">Categories</label>
-            <div class="form-check" th:each="category : ${allCategories}">
-                <input class="form-check-input" type="checkbox" name="categoryIds" title="Category"
-                    th:id="${'category-' + category.id}" th:value="${category.id}" th:title="${category.name}"
-                    th:checked="${post.categories.contains(category)}">
-                <label class="form-check-label" th:for="${'category-' + category.id}" th:text="${category.name}">Category</label>
+        <div th:if="${!#lists.isEmpty(allCategories)}">
+            <label class="mb-2 block text-sm font-semibold text-gray-700">Categories</label>
+            <div class="flex flex-wrap gap-3">
+                <label class="inline-flex cursor-pointer items-center gap-2 rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50" th:each="category : ${allCategories}">
+                    <input type="checkbox" name="categoryIds" title="Category"
+                        th:id="${'category-' + category.id}" th:value="${category.id}" th:title="${category.name}"
+                        th:checked="${post.categories.contains(category)}"
+                        class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                    <span th:text="${category.name}">Category</span>
+                </label>
             </div>
         </div>
 
-        <div class="divider"></div>
+        <hr class="border-gray-200">
 
-        <div class="d-flex justify-content-between align-items-center pt-3">
-            <a th:href="@{/posts}" class="btn btn-outline-secondary">
+        <div class="flex items-center justify-between pt-2">
+            <a th:href="@{/posts}" class="text-sm font-medium text-gray-600 hover:text-gray-900">
                 Cancel
             </a>
-            <div>
-                <a th:href="@{/{id}(id=${post.id})}" class="btn btn-outline-secondary me-2">
-                    <i class="fas fa-eye me-1"></i>Preview
+            <div class="flex gap-2">
+                <a th:href="@{/{id}(id=${post.id})}" class="inline-flex items-center gap-1.5 rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50">
+                    <i class="fas fa-eye"></i>Preview
                 </a>
-                <button type="submit" class="btn btn-success">
-                    <i class="fas fa-check me-2"></i>Update
+                <button type="submit" class="inline-flex items-center gap-2 rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-500">
+                    <i class="fas fa-check"></i>Update
                 </button>
             </div>
         </div>
