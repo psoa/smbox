@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.prose-content {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
