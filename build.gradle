@@ -6,7 +6,12 @@ plugins {
 
 group = 'br.com.psoa.smbox'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '21'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
 
 repositories {
 	mavenCentral()
@@ -15,6 +20,9 @@ repositories {
 springBoot {
     mainClass = 'br.com.psoa.smbox.SmboxApplication'
 }
+
+def javafxVersion = '21.0.4'
+def jfxClassifier = System.getProperty('os.name').toLowerCase().contains('win') ? 'win' : 'linux'
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -26,10 +34,63 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+	// JavaFX, bundled as ordinary classpath deps (BOOT-INF/lib) rather than via jlink/module-path,
+	// so Spring Boot's JarLauncher keeps working unmodified. Classifier picked by build-host OS;
+	// mirrors the os.name branching used for the Tailwind CLI download below.
+	implementation "org.openjfx:javafx-base:${javafxVersion}:${jfxClassifier}"
+	implementation "org.openjfx:javafx-graphics:${javafxVersion}:${jfxClassifier}"
+	implementation "org.openjfx:javafx-controls:${javafxVersion}:${jfxClassifier}"
+	implementation "org.openjfx:javafx-media:${javafxVersion}:${jfxClassifier}"
+	implementation "org.openjfx:javafx-web:${javafxVersion}:${jfxClassifier}"
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+def tailwindVersion = '3.4.19'
+def tailwindCliDir = layout.buildDirectory.dir('tailwindcli').get().asFile
+def tailwindCliBinaryName = { ->
+	def os = System.getProperty('os.name').toLowerCase()
+	def arch = System.getProperty('os.arch').toLowerCase()
+	def isArm = arch.contains('aarch64') || arch.contains('arm')
+	if (os.contains('win')) return 'tailwindcss-windows-x64.exe'
+	if (os.contains('mac')) return isArm ? 'tailwindcss-macos-arm64' : 'tailwindcss-macos-x64'
+	return isArm ? 'tailwindcss-linux-arm64' : 'tailwindcss-linux-x64'
+}
+def tailwindCliFile = { -> new File(tailwindCliDir, tailwindCliBinaryName()) }
+
+tasks.register('downloadTailwindCli') {
+	def cliFile = tailwindCliFile()
+	outputs.file(cliFile)
+	doLast {
+		if (!cliFile.exists()) {
+			tailwindCliDir.mkdirs()
+			def url = "https://github.com/tailwindlabs/tailwindcss/releases/download/v${tailwindVersion}/${tailwindCliBinaryName()}"
+			println "Downloading Tailwind CLI from ${url}"
+			cliFile.bytes = new URL(url).bytes
+			cliFile.setExecutable(true)
+		}
+	}
+}
+
+tasks.register('buildTailwindCss', Exec) {
+	dependsOn 'downloadTailwindCli'
+	inputs.file('tailwind.config.js')
+	inputs.file('src/main/tailwind/input.css')
+	inputs.dir('src/main/resources/templates')
+	def outputFile = file('src/main/resources/static/css/app.css')
+	outputs.file(outputFile)
+	commandLine tailwindCliFile().absolutePath,
+		'-c', 'tailwind.config.js',
+		'-i', 'src/main/tailwind/input.css',
+		'-o', outputFile.absolutePath,
+		'--minify'
+}
+
+tasks.named('processResources') {
+	dependsOn 'buildTailwindCss'
 }
 
 
@@ -37,71 +98,59 @@ bootJar {
 	archiveFileName = "smbox-${version}.jar"
 }
 
-def deployDir = "${System.getenv('HOME')}/apps/smbox"
+def appName = 'Smbox'
+def appVersion = version.toString().replace('-SNAPSHOT', '')
+def iconDir = file('packaging/icons')
+def jpackageDestDir = layout.buildDirectory.dir('jpackage')
+// Spring Boot 3.2+ loader launcher; verified against this project's built jar manifest.
+def springBootLauncherMainClass = 'org.springframework.boot.loader.launch.JarLauncher'
 
-tasks.register('copyFiles', Copy) {
-	from bootJar
-	into deployDir
-	rename { String fileName ->
-		fileName.replace("smbox-${version}.jar", "smbox.jar")
+tasks.register('prepareJpackageInput', Copy) {
+	dependsOn 'bootJar'
+	from bootJar.archiveFile
+	into layout.buildDirectory.dir('jpackage-input')
+}
+
+tasks.register('jpackageLinux', Exec) {
+	group = 'distribution'
+	description = 'Builds a Linux .deb installer using jpackage'
+	dependsOn 'prepareJpackageInput'
+	doFirst { jpackageDestDir.get().asFile.mkdirs() }
+	commandLine 'jpackage',
+		'--type', 'deb',
+		'--input', layout.buildDirectory.dir('jpackage-input').get().asFile.absolutePath,
+		'--main-jar', bootJar.archiveFileName.get(),
+		'--main-class', springBootLauncherMainClass,
+		'--name', appName,
+		'--app-version', appVersion,
+		'--icon', "${iconDir}/smbox.png",
+		'--dest', jpackageDestDir.get().asFile.absolutePath,
+		'--linux-shortcut',
+		'--linux-menu-group', 'Office',
+		'--vendor', 'psoa'
+}
+
+tasks.register('jpackageWindows', Exec) {
+	group = 'distribution'
+	description = 'Builds a Windows .msi installer using jpackage (must run ON Windows)'
+	dependsOn 'prepareJpackageInput'
+	doFirst {
+		if (!System.getProperty('os.name').toLowerCase().contains('win')) {
+			throw new GradleException('jpackageWindows must be run on a Windows machine/CI runner.')
+		}
+		jpackageDestDir.get().asFile.mkdirs()
 	}
-}
-
-/*// Task to build the React application
-task buildFrontend(type: Exec) {
-	workingDir 'frontend'
-	commandLine 'npm', 'install'
-	commandLine 'npm', 'run', 'build'
-}
-
-// Task to copy the React build output to the resources directory
-task copyFrontend(type: Copy) {
-	dependsOn buildFrontend
-	from 'frontend/build'
-	into 'src/main/resources/static'
-}
-*/
-
-tasks.register('copyHelp', Copy) {
-	from 'HELP.md'
-	into deployDir
-}
-
-tasks.register('copyRun', Copy) {
-	from 'run.sh', 'stop.sh'
-	into deployDir
-}
-
-tasks.register('makeExecutable', Exec) {
-	dependsOn 'copyRun'
-	commandLine 'bash', '-c', "chmod +x ${deployDir}/run.sh ${deployDir}/stop.sh"
-}
-
-tasks.register('stopApp', Exec) {
-	dependsOn 'copyFiles', 'copyHelp', 'makeExecutable'
-	commandLine 'bash', '-c',
-		"PID_FILE=${deployDir}/smbox.pid; " +
-		"if [ -f \"\$PID_FILE\" ]; then " +
-		"  PID=\$(cat \"\$PID_FILE\"); " +
-		"  if kill -0 \"\$PID\" 2>/dev/null; then " +
-		"    echo \"Stopping smbox (PID \$PID)...\"; " +
-		"    kill \"\$PID\" && sleep 2; " +
-		"  fi; " +
-		"  rm -f \"\$PID_FILE\"; " +
-		"else " +
-		"  echo 'smbox is not running.'; " +
-		"fi"
-}
-
-tasks.register('startApp', Exec) {
-	dependsOn 'stopApp'
-	workingDir deployDir
-	commandLine 'bash', '-c',
-		"nohup java -jar ${deployDir}/smbox.jar > ${deployDir}/smbox.log 2>&1 & " +
-		"echo \$! > ${deployDir}/smbox.pid; " +
-		"echo \"smbox started (PID \$(cat ${deployDir}/smbox.pid))\""
-}
-
-tasks.register('deploy') {
-	dependsOn 'startApp'
+	commandLine 'jpackage',
+		'--type', 'msi',
+		'--input', layout.buildDirectory.dir('jpackage-input').get().asFile.absolutePath,
+		'--main-jar', bootJar.archiveFileName.get(),
+		'--main-class', springBootLauncherMainClass,
+		'--name', appName,
+		'--app-version', appVersion,
+		'--icon', "${iconDir}/smbox.ico",
+		'--dest', jpackageDestDir.get().asFile.absolutePath,
+		'--win-menu',
+		'--win-shortcut',
+		'--win-dir-chooser',
+		'--vendor', 'psoa'
 }
