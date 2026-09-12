@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-**Smbox** is a personal brainstorming notes **desktop** app — Spring Boot 3.3.5 + Thymeleaf + SQLite, shown in a JavaFX WebView. Single-module Gradle project (Java 25). Runs on Linux and Windows.
+**Smbox** is a personal brainstorming notes **desktop** app — Spring Boot 3.5.16 + Thymeleaf + SQLite, shown in a JavaFX WebView. Single-module Gradle project (Java 25). Runs on Linux and Windows.
 
 ## Commands
 

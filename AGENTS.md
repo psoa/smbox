@@ -1,7 +1,7 @@
 # Smbox - AI Agent Guide
 
 ## Project Overview
-**Smbox** is a personal brainstorming notes desktop application (Spring Boot 3.3.5 + Thymeleaf + SQLite inside a JavaFX WebView, Java 25). It provides CRUD operations for managing dated posts with full-text search, and runs on Linux and Windows.
+**Smbox** is a personal brainstorming notes desktop application (Spring Boot 3.5.16 + Thymeleaf + SQLite inside a JavaFX WebView, Java 25). It provides CRUD operations for managing dated posts with full-text search, and runs on Linux and Windows.
 
 ## Architecture & Key Components
 
@@ -24,7 +24,7 @@
 
 ### Database Layer
 - **Database**: SQLite at `${user.home}/smbox/data/smbox.db` (created on first launch)
-- **ORM**: Hibernate 6.2.0 with SQLite dialect
+- **ORM**: Hibernate 6.6 with SQLite dialect
 - **Configuration**: `application.properties` sets datasource URL, `ddl-auto=update`, localhost bind, and file logging
 - **Desktop**: `SmboxLauncher` starts JavaFX; `SmboxApplication` embeds Tomcat on `127.0.0.1` with an ephemeral port and loads the UI in a `WebView`. Single-instance lock: `${user.home}/smbox/smbox.lock`.
 
