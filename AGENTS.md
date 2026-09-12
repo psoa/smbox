@@ -1,7 +1,7 @@
 # Smbox - AI Agent Guide
 
 ## Project Overview
-**Smbox** is a personal brainstorming notes web application built with Spring Boot 3.3.5, Thymeleaf, and SQLite. It provides CRUD operations for managing dated posts with full-text search capability.
+**Smbox** is a personal brainstorming notes desktop application (Spring Boot 3.3.5 + Thymeleaf + SQLite inside a JavaFX WebView, Java 25). It provides CRUD operations for managing dated posts with full-text search, and runs on Linux and Windows.
 
 ## Architecture & Key Components
 
@@ -23,16 +23,16 @@
   - `@RepositoryRestResource(collectionResourceRel = "categories", path = "categories")`
 
 ### Database Layer
-- **Database**: SQLite at `${HOME}/smbox/data/smbox.db`
+- **Database**: SQLite at `${user.home}/smbox/data/smbox.db` (created on first launch)
 - **ORM**: Hibernate 6.2.0 with SQLite dialect
-- **Configuration**: `application.properties` sets datasource URL and Hibernate dialect
-- **Critical Note**: Database file must exist before app start
+- **Configuration**: `application.properties` sets datasource URL, `ddl-auto=update`, localhost bind, and file logging
+- **Desktop**: `SmboxLauncher` starts JavaFX; `SmboxApplication` embeds Tomcat on `127.0.0.1` with an ephemeral port and loads the UI in a `WebView`. Single-instance lock: `${user.home}/smbox/smbox.lock`.
 
 ### UI & Templates
 - **Template Engine**: Thymeleaf with layout fragment pattern (`th:fragment="layout (content, pageTitle)"`)
 - **Base Layout**: `layout.html` - fixed left sidebar (`md:w-64`) listing categories and "Add New" links, plus main content area with `md:pl-64` offset and a bottom footer
-- **CSS System**: Tailwind CSS (Play CDN via `cdn.tailwindcss.com`) + FontAwesome 6.0.0 + Google Fonts; no build step required
-  - `tailwind.config` inline script maps `font-sans` → Inter, `font-serif` → Merriweather
+- **CSS System**: Local Tailwind CLI build (`static/css/app.css`) + self-hosted FontAwesome 6.0.0 and Inter/Merriweather
+  - `tailwind.config.js` maps `font-sans` → Inter, `font-serif` → Merriweather
   - Accent color: `indigo-600`; success actions: `emerald-600`; destructive: `red-600` outline
 - **Key Templates**:
   - `list.html` - displays posts with search bar and category filter; client-side no-JS filtering is absent — all filtering is Java Streams in controller
@@ -44,27 +44,19 @@
 
 ### Build & Run
 ```bash
-# Development (with hot reload via spring-boot-devtools)
+# Development (opens the JavaFX window)
 ./gradlew bootRun
 
 # Run tests
 ./gradlew test
 
-# Production build & deploy: builds jar, copies to $HOME/apps/smbox/, stops running instance and restarts
-./gradlew deploy
-
-# Manual start/stop (from $HOME/apps/smbox/) — writes PID to smbox.pid
-./run.sh
-./stop.sh
+# Native installers (must be built on the target OS)
+./gradlew jpackageLinux
+./gradlew jpackageWindows
 ```
 
 ### Database Setup
-Required before first run:
-```bash
-mkdir -p $HOME/smbox/data
-touch $HOME/smbox/data/smbox.db
-```
-DB URL is hardcoded in `application.properties` as `jdbc:sqlite:${HOME}/smbox/data/smbox.db`.
+Not required. First launch creates `${user.home}/smbox/data/smbox.db` and applies Hibernate `ddl-auto=update`. Logs: `${user.home}/smbox/smbox.log`.
 
 ### Testing
 - Test framework: JUnit 5 (Spring Boot Test starter configured)
@@ -113,9 +105,8 @@ DB URL is hardcoded in `application.properties` as `jdbc:sqlite:${HOME}/smbox/da
 - Tailwind utility classes only — no custom CSS variables; the one custom class is `.prose-content { white-space: pre-wrap; }`
 
 ### External Dependencies
-- Tailwind CSS Play CDN (`cdn.tailwindcss.com`)
-- FontAwesome 6.0.0 (CDN)
-- Google Fonts (Inter, Merriweather)
+- OpenJFX 25 (classpath, OS classifier: linux / linux-aarch64 / win / win-aarch64)
+- Tailwind CLI (downloaded at build time) + vendored FontAwesome / Inter / Merriweather
 
 ## When Modifying This Codebase
 
@@ -124,5 +115,5 @@ DB URL is hardcoded in `application.properties` as `jdbc:sqlite:${HOME}/smbox/da
 3. **Modify search**: Edit stream filter in `PostController.getAllPosts()` — consider database query optimization for large datasets
 4. **Change styling**: Use Tailwind utility classes directly in templates; adjust sidebar or layout in `layout.html`
 5. **Add validation**: Implement in `BindingResult` check or use `@Valid` + annotations on model (`Post.java` / `Category.java`)
-6. **Database migrations**: SQLite schema changes require manual SQL against `$HOME/smbox/data/smbox.db`
+6. **Database migrations**: new columns/tables are applied via `spring.jpa.hibernate.ddl-auto=update`; destructive changes still need manual SQL against `${user.home}/smbox/data/smbox.db`
 7. **Add categories to a new entity**: Follow the `Post`↔`Category` many-to-many pattern — owning side on `Post`, `@JsonIgnore` on the inverse side

@@ -9,7 +9,7 @@ version = '0.0.1-SNAPSHOT'
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(21)
+		languageVersion = JavaLanguageVersion.of(25)
 	}
 }
 
@@ -18,11 +18,18 @@ repositories {
 }
 
 springBoot {
-    mainClass = 'br.com.psoa.smbox.SmboxApplication'
+    mainClass = 'br.com.psoa.smbox.SmboxLauncher'
 }
 
-def javafxVersion = '21.0.4'
-def jfxClassifier = System.getProperty('os.name').toLowerCase().contains('win') ? 'win' : 'linux'
+def javafxVersion = '25.0.4'
+def javafxClassifier = {
+	def os = System.getProperty('os.name').toLowerCase()
+	def arch = System.getProperty('os.arch').toLowerCase()
+	def isAarch64 = arch.contains('aarch64') || arch.contains('arm64')
+	if (os.contains('win')) return isAarch64 ? 'win-aarch64' : 'win'
+	if (os.contains('mac')) return isAarch64 ? 'mac-aarch64' : 'mac'
+	return isAarch64 ? 'linux-aarch64' : 'linux'
+}()
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -34,15 +41,16 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
 	// JavaFX, bundled as ordinary classpath deps (BOOT-INF/lib) rather than via jlink/module-path,
 	// so Spring Boot's JarLauncher keeps working unmodified. Classifier picked by build-host OS;
 	// mirrors the os.name branching used for the Tailwind CLI download below.
-	implementation "org.openjfx:javafx-base:${javafxVersion}:${jfxClassifier}"
-	implementation "org.openjfx:javafx-graphics:${javafxVersion}:${jfxClassifier}"
-	implementation "org.openjfx:javafx-controls:${javafxVersion}:${jfxClassifier}"
-	implementation "org.openjfx:javafx-media:${javafxVersion}:${jfxClassifier}"
-	implementation "org.openjfx:javafx-web:${javafxVersion}:${jfxClassifier}"
+	implementation "org.openjfx:javafx-base:${javafxVersion}:${javafxClassifier}"
+	implementation "org.openjfx:javafx-graphics:${javafxVersion}:${javafxClassifier}"
+	implementation "org.openjfx:javafx-controls:${javafxVersion}:${javafxClassifier}"
+	implementation "org.openjfx:javafx-media:${javafxVersion}:${javafxClassifier}"
+	implementation "org.openjfx:javafx-web:${javafxVersion}:${javafxClassifier}"
 }
 
 tasks.named('test') {
@@ -69,7 +77,7 @@ tasks.register('downloadTailwindCli') {
 			tailwindCliDir.mkdirs()
 			def url = "https://github.com/tailwindlabs/tailwindcss/releases/download/v${tailwindVersion}/${tailwindCliBinaryName()}"
 			println "Downloading Tailwind CLI from ${url}"
-			cliFile.bytes = new URL(url).bytes
+			cliFile.bytes = URI.create(url).toURL().bytes
 			cliFile.setExecutable(true)
 		}
 	}
@@ -115,7 +123,13 @@ tasks.register('jpackageLinux', Exec) {
 	group = 'distribution'
 	description = 'Builds a Linux .deb installer using jpackage'
 	dependsOn 'prepareJpackageInput'
-	doFirst { jpackageDestDir.get().asFile.mkdirs() }
+	doFirst {
+		def os = System.getProperty('os.name').toLowerCase()
+		if (os.contains('win') || os.contains('mac')) {
+			throw new GradleException('jpackageLinux must be run on a Linux machine/CI runner.')
+		}
+		jpackageDestDir.get().asFile.mkdirs()
+	}
 	commandLine 'jpackage',
 		'--type', 'deb',
 		'--input', layout.buildDirectory.dir('jpackage-input').get().asFile.absolutePath,

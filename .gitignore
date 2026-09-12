@@ -33,5 +33,4 @@ out
 .project
 .settings/
 bin/
-gradle/
 build/

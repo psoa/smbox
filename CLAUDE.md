@@ -4,33 +4,27 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-**Smbox** is a personal brainstorming notes web app — Spring Boot 3.3.5 + Thymeleaf + SQLite. Single-module Gradle project (Java 21).
+**Smbox** is a personal brainstorming notes **desktop** app — Spring Boot 3.3.5 + Thymeleaf + SQLite, shown in a JavaFX WebView. Single-module Gradle project (Java 25). Runs on Linux and Windows.
 
 ## Commands
 
 ```bash
-# Development (hot reload via spring-boot-devtools)
+# Development (opens the JavaFX window; hot reload via spring-boot-devtools)
 ./gradlew bootRun
 
 # Run tests
 ./gradlew test
 
-# Deploy: builds jar, copies to $HOME/apps/smbox/, stops running instance and restarts
-./gradlew deploy
-
-# Manual start/restart (from $HOME/apps/smbox/) — writes PID to smbox.pid
-./run.sh
+# Native installers (jpackage cannot cross-compile)
+./gradlew jpackageLinux     # .deb — run on Linux
+./gradlew jpackageWindows   # .msi — run on Windows
 ```
+
+Entry point is `SmboxLauncher` (must not extend `javafx.application.Application`, or `bootRun` fails with "JavaFX runtime components are missing").
 
 ## First-time setup
 
-The SQLite DB file must exist before the app starts:
-```bash
-mkdir -p $HOME/smbox/data
-touch $HOME/smbox/data/smbox.db
-```
-
-DB URL is hardcoded in `application.properties` as `jdbc:sqlite:${HOME}/smbox/data/smbox.db`.
+None. On first launch the app creates `${user.home}/smbox/data/` and the SQLite file, and Hibernate `ddl-auto=update` creates tables. Logs go to `${user.home}/smbox/smbox.log`. A second instance is refused via `${user.home}/smbox/smbox.lock`.
 
 ## Architecture
 
@@ -47,8 +41,8 @@ DB URL is hardcoded in `application.properties` as `jdbc:sqlite:${HOME}/smbox/da
 
 ## UI conventions
 
-- Tailwind CSS (Play CDN, `cdn.tailwindcss.com`) + FontAwesome 6.0.0 + Google Fonts (Inter, Merriweather) — all via CDN, no build step.
-- `tailwind.config` (inline script in `layout.html`) maps `font-sans` → Inter, `font-serif` → Merriweather.
+- Tailwind CSS is built locally (`./gradlew buildTailwindCss` / `processResources`) into `src/main/resources/static/css/app.css`. FontAwesome 6.0.0 and Inter/Merriweather are self-hosted under `src/main/resources/static/`.
+- `tailwind.config.js` maps `font-sans` → Inter, `font-serif` → Merriweather.
 - Layout is a fixed-width (`w-64`) left sidebar (categories + "Add New" links) with `md:pl-64` main content, max-width `3xl`, centered. Sidebar stacks above content below the `md` breakpoint.
 - No top navbar — all navigation lives in the sidebar.
 - Accent color is Tailwind `indigo-600`; success actions (publish/save) use `emerald-600`; destructive actions use `red-600` outline style.
